@@ -1,2 +1,2 @@
-# EPL-Transfer-Analyzer
-A data-driven tool for evaluating Premier League transfer targets through player performance, tactical fit, squad needs, and estimated value.
+# NBA-Player-Value-Analyzer
+An NBA trade analyzer that evaluates potential trades and player acquisitions using player performance, team needs, roster fit, and contract value to help identify moves that make sense for each team.
