@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Real data never goes in the repo (NBA.com terms; see docs/mvp-plan.md).
+# Only data/mock/ (fictional) is committed.
+data/raw/
+data/processed/
+
+# Local secrets and settings
+.env
+.streamlit/secrets.toml
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
