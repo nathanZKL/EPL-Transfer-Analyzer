@@ -6,7 +6,7 @@ A current snapshot for picking up work. Overwrite it at meaningful stopping poin
 
 ## Current objective
 
-Finish MVP **step 2: NBA.com data** on branch `step-2-nba-data` ([mvp-plan.md](mvp-plan.md#build-steps)). The code is built and tested offline; the first real fetch is next.
+Finish MVP **step 2: NBA.com data** on branch `step-2-nba-data`, draft PR #2 ([mvp-plan.md](mvp-plan.md#build-steps)). The code is built and tested offline; the first real fetch is next.
 
 ## Done
 
