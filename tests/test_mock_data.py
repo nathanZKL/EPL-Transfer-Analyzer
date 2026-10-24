@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from nbavalue import mock_data
+from nbavalue import mock_data, prepare
 from nbavalue.labels import DataLabel
 
 REAL_NBA_TEAMS = set(
@@ -36,13 +36,28 @@ def test_player_ids_are_unique(players):
     assert players["player_id"].is_unique
 
 
+def test_mock_players_use_the_real_table_columns(players):
+    assert list(players.columns) == prepare.PLAYER_COLUMNS
+
+
 def test_stats_are_plausible(players):
     stat_cols = "games_played minutes points rebounds assists steals blocks turnovers".split()
-    stat_cols += ["fg3m", "fg3a"]
+    stat_cols += "fgm fga fg3m fg3a ftm fta oreb dreb possessions".split()
+    pct_cols = ["usg_pct", "ast_pct", "oreb_pct", "dreb_pct"]
     assert (players[stat_cols] >= 0).all().all()
+    assert players[pct_cols].apply(lambda col: col.between(0, 1)).all().all()
     assert (players["games_played"] <= 82).all()
     assert (players["minutes"] <= players["games_played"] * 48).all()
     assert (players["fg3m"] <= players["fg3a"]).all()
+    assert (players["fg3m"] <= players["fgm"]).all()
+    assert (players["fgm"] <= players["fga"]).all()
+    assert (players["ftm"] <= players["fta"]).all()
+
+
+def test_stats_add_up(players):
+    expected_points = 2 * players["fgm"] + players["fg3m"] + players["ftm"]
+    assert (players["points"] == expected_points).all()
+    assert (players["oreb"] + players["dreb"] == players["rebounds"]).all()
 
 
 def test_every_salary_belongs_to_a_mock_player(players, salaries):
