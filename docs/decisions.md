@@ -8,6 +8,8 @@ Source for the 2026-10-23 entries: the MVP plan agreed with Nathan that day ([mv
 
 | # | Decision | Why | Tradeoff |
 | --- | --- | --- | --- |
+| D16 | **Set up Python with `uv`** (`uv venv --python 3.13`). Resolves O7. (2026-10-24) | The Mac's default `python3` is 3.9.6; `uv` was already installed and fetches 3.13 itself. | One more tool to learn; plain `pip` still works inside the venv. |
+| D15 | **NBA.com column names live only in `nbavalue/prepare.py`'s mappings**; everything downstream uses our own snake_case names. Step 2 fetches only the base and advanced tables, pausing 3 seconds between requests and reusing the newest saved snapshot unless `--refresh`. (2026-10-24, step 2 plan approved by Nathan) | A renamed NBA.com field is a one-line fix; fewer requests while field names are unconfirmed. | Hustle, tracking and play-type stats wait for a follow-up. The 3-second pause is a guess; NBA.com publishes no limits. |
 | D1 | **The MVP answers one question:** which players best fit a role, and who gives the most of it per dollar. Trades, salary-cap rules, team needs and hosting are out. (2026-10-23) | Keeps the first version small enough to finish and explain. | The repo name and README pitch ("trade analyzer") promise more than v1 does. |
 | D2 | **Local Streamlit app only, no hosted site.** (2026-10-23) | NBA.com terms allow personal, non-commercial use and forbid public republishing. | It can't be shared as a live link; the public portfolio shows code and mock-data screenshots. |
 | D3 | **Stats come from NBA.com via `nba_api`, 2025-26 season.** (2026-10-23) | Rich stats (hustle, tracking, play types) that can measure roles directly. 2026-27 had barely started. | `nba_api` is unofficial and has no published rate limits; fetches must be cached and slow. Data is a season old. |
@@ -31,6 +33,6 @@ Source for the 2026-10-23 entries: the MVP plan agreed with Nathan that day ([mv
 | O2 | **Salary-to-player matching rule.** | Normalised name plus team, with a small manual override file. | Step 3 | Nathan, in step 3 PR |
 | O3 | **Role weights.** | Starting guesses in `config/roles.yaml`, tuned once real rankings exist. | Step 4 tuning | Nathan |
 | O4 | **Minimum minutes for percentiles.** | 500 minutes. | Step 4 | Nathan |
-| O5 | **Exact NBA.com field names for each role stat.** | To be confirmed against a real fetch. | Steps 2 and 4 | Confirmed from data in step 2 |
+| O5 | **Exact NBA.com field names for each role stat.** | Base names taken from `nba_api`'s published schema; advanced names (`POSS`, `USG_PCT`, `AST_PCT`, `OREB_PCT`, `DREB_PCT`) are unconfirmed. `update_data` prints every column it receives. | Steps 2 and 4 | Confirmed from data in step 2 |
 | O6 | **Parser for `config/roles.yaml`.** YAML needs a new dependency (e.g. PyYAML), which isn't in `requirements.txt` yet. | Not discussed. | Step 4 | Nathan (new dependencies need approval) |
-| O7 | **How to get Python 3.11+ on Nathan's Mac.** The default `python3` is 3.9.6. `uv` is installed and works (see CLAUDE.md). | Not discussed. | Local setup | Nathan |
+| O8 | **How mock data joins the real pipeline.** | Proposed: mock CSVs use the same snake_case columns as `data/processed/players.csv`, enforced by a test. | Steps 2 (follow-up) and 4 | Nathan |

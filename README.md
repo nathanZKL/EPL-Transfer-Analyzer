@@ -28,7 +28,7 @@ Real data is downloaded to your own machine and is **never committed** to this r
 
 ## Setup
 
-You need **Python 3.11 or newer** (tested on 3.13). Check with `python3 --version`.
+You need [uv](https://docs.astral.sh/uv/), which downloads the right Python (3.13) for you. The project needs Python 3.11 or newer; an older system `python3` won't work.
 
 ```bash
 # 1. Get the code
@@ -36,14 +36,14 @@ git clone https://github.com/nathanZKL/NBA-Player-Value-Analyzer.git
 cd NBA-Player-Value-Analyzer
 
 # 2. Create a virtual environment: a private folder of packages just for this project
-python3 -m venv .venv
+uv venv --python 3.13 .venv
 
 # 3. Turn it on (do this every time you open a new terminal)
 source .venv/bin/activate        # macOS / Linux
 # .venv\Scripts\activate         # Windows
 
 # 4. Install the packages
-pip install -r requirements-dev.txt
+uv pip install -r requirements-dev.txt
 ```
 
 ## Run the app
@@ -53,6 +53,14 @@ streamlit run app.py
 ```
 
 Your browser opens at http://localhost:8501. You should see a yellow **MOCK DATA** warning above two tables of fictional players and salaries. Press `Ctrl+C` in the terminal to stop it.
+
+## Fetch real NBA.com stats (optional, your own machine only)
+
+```bash
+python -m nbavalue.update_data
+```
+
+This downloads 2025-26 player stats from NBA.com into `data/raw/2025-26/<date>/` (two requests, a few seconds apart) and builds `data/processed/players.csv`. Running it again reuses the saved files; add `--refresh` to download again. Both folders are git-ignored: NBA.com's terms allow personal use but not republishing. The app doesn't read this file yet.
 
 ## Check the code
 
@@ -69,9 +77,12 @@ app.py               Streamlit app (the screen you see)
 nbavalue/            Python code the app uses
   labels.py          The data labels above
   mock_data.py       Loads and checks the mock data
+  fetch.py           Downloads NBA.com stats politely, with a cache
+  prepare.py         Checks and labels them as one row per player
+  update_data.py     The command that runs fetch + prepare
 data/mock/           Fictional data, committed to the repo
 tests/               Automated checks
-docs/                The MVP plan and architecture
+docs/                Plan, architecture, decisions, handoff
 CLAUDE.md            Instructions for Claude when working on this repo
 ```
 

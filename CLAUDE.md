@@ -8,7 +8,7 @@ NBA Player Value Analyzer: a local Streamlit app that answers *"Which NBA player
 
 **MVP boundaries:** 2025-26 NBA.com stats plus a sourced salary CSV; six role fit scores; a fit-vs-salary value view; a shortlist, comparison and method page. **Out:** trades, salary-cap rules, team needs, hosting, databases. Ideas go in the plan's "Ideas for later" table.
 
-Current status: step 1 of 6 (skeleton) is done. The app runs on mock data only. See the handoff for what's next.
+Current status: step 1 of 6 (skeleton) is done; step 2 (NBA.com fetch) is in progress. The app still shows mock data only. See the handoff for what's next.
 
 ## Project docs: read before working
 
@@ -53,12 +53,13 @@ Keep them current in the same pull request as the change:
 - Tests use mock data only; never call NBA.com or salary sites from tests.
 - Line length 100; ruff rules E, F, I, B, UP.
 
-## Commands (verified 2026-10-24 on macOS, Python 3.13)
+## Commands (verified 2026-10-24 on macOS, Python 3.13 via uv)
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate   # one-time setup; python3 must be 3.11+
-pip install -r requirements-dev.txt                  # install
+uv venv --python 3.13 .venv && source .venv/bin/activate   # one-time setup (uv, decision D16)
+uv pip install -r requirements-dev.txt               # install
 streamlit run app.py                                 # run the app (http://localhost:8501)
+python -m nbavalue.update_data                       # fetch NBA.com stats (Nathan's machine only)
 pytest                                               # tests, including a headless app smoke test
 ruff check .                                         # lint
 ruff format --check .                                # formatting check (use `ruff format .` to fix)
@@ -66,7 +67,7 @@ ruff format --check .                                # formatting check (use `ru
 
 There is no build step. Run `pytest`, `ruff check .` and `ruff format --check .` before every commit.
 
-On Nathan's Mac the default `python3` is 3.9.6, which fails at import (`StrEnum`). `uv` is installed. `uv venv --python 3.13 .venv`, then `uv pip install -r requirements-dev.txt`, gives a working 3.13 environment (verified). Which setup to standardise on is open (decisions O7).
+Don't use the Mac's default `python3` (3.9.6): it fails at import (`StrEnum`). `update_data` reuses the newest saved snapshot; `--refresh` downloads again. It has not yet been run against real NBA.com.
 
 ## Environment notes
 

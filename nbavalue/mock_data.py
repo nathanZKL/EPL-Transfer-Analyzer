@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from nbavalue.checks import require_columns
 from nbavalue.labels import DataLabel
 
 MOCK_DIR = Path(__file__).resolve().parent.parent / "data" / "mock"
@@ -38,13 +39,6 @@ SALARY_COLUMNS = [
     "retrieved_on",
     "data_label",
 ]
-
-
-def require_columns(df: pd.DataFrame, required: list[str], name: str) -> None:
-    """Stop with a clear message if a table is missing any expected column."""
-    missing = [col for col in required if col not in df.columns]
-    if missing:
-        raise ValueError(f"{name} is missing columns: {', '.join(missing)}")
 
 
 def _load(filename: str, required: list[str]) -> pd.DataFrame:
