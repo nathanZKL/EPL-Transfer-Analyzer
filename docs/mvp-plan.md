@@ -45,6 +45,18 @@ Trades, salary-cap rules and a hosted website are **out of scope** for the MVP (
 
 Exact NBA.com field names are confirmed in step 2 against a real fetch.
 
+## Done when
+
+Written on 2026-10-24 from the agreed features above. **Proposed, awaiting Nathan's confirmation.** Every feature also needs passing `pytest`, `ruff check .` and `ruff format --check .`, and tests that run on mock data only.
+
+| Feature | Done when |
+| --- | --- |
+| 1. Labelled data snapshot | One documented command fetches 2025-26 NBA.com stats into dated files in `data/raw/`, reusing the cache on a second run and pausing between requests. A salary CSV in the agreed format imports and validates, failing loudly on missing columns or sources. Every row carries a label (`NBA.com` + fetch date, `Reported salary` + source and date, or `Mock`). Nathan has run the first real fetch on his machine. |
+| 2. Per-100 stats and percentiles | Per-100-possession stats and league-wide percentiles are computed by tested functions. Players under the minimum-minutes cut are excluded from percentiles. Results on the mock dataset match hand-checked values. |
+| 3. Role fit scores | All six starter roles are defined in `config/roles.yaml`. Every qualifying player gets a 0–100 score for every role. Scores are labelled `Estimate`. Changing a weight in the config changes the ranking without code changes. |
+| 4. Value view | For a chosen role, the app plots fit against salary and ranks by fit percentile minus salary percentile. Players without a salary are shown as missing, not dropped or guessed. The value score is labelled as our estimate. |
+| 5. Shortlist, comparison, method page | The role and filters (exclude team, max salary, max age, min minutes) change the shortlist. Two or three players can be compared side by side. A method page explains the calculations and limits. Every screen with real stats credits NBA.com. |
+
 ## Architecture
 
 See [architecture.md](architecture.md).
@@ -53,7 +65,7 @@ See [architecture.md](architecture.md).
 
 Six small pull requests, each reviewable and testable on its own.
 
-1. **Skeleton** – project layout, dependencies, lint and test setup, mock dataset and mock salary file, README. ✅ this PR
+1. **Skeleton** – project layout, dependencies, lint and test setup, mock dataset and mock salary file, README. ✅ done (PR #1, merged 2026-10-23)
 2. **NBA.com data** – cached, rate-limited fetch for 2025-26, field checks, clean player table. Nathan runs the first real fetch.
 3. **Salary import** – CSV format, validation, matching salaries to players.
 4. **Analysis** – per-100 stats, percentiles, role fit scores and value score, tested on mock data.
@@ -62,12 +74,12 @@ Six small pull requests, each reviewable and testable on its own.
 
 ## Open decisions
 
-- ⚠ **Salary site** – Spotrac or HoopsHype, depending on their terms and robots.txt (Nathan is checking). Fallback: hand-built CSV.
-- ⚠ **Salary matching rule** – proposed: normalised name plus team, with a small manual override file.
-- ⚠ **Role weights** – starting guesses, tuned once real rankings exist.
-- ⚠ **Minimum minutes** – 500 is a starting assumption.
+Tracked in [decisions.md](decisions.md#open): salary site, salary matching rule, role weights, minimum minutes, and a few smaller ones.
 
 ## Ideas for later
+
+Not in the MVP. New ideas go here, not into the build steps, unless Nathan agrees.
+
 
 | Idea | Data it needs | Data status |
 | --- | --- | --- |
