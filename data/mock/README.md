@@ -8,9 +8,9 @@ It exists so that:
 - the app can be demoed offline,
 - screenshots for the public repo don't republish NBA.com data (which its terms don't allow).
 
-The columns are a first draft. Step 2 confirms the real NBA.com field names, and these files will be updated to match.
+`players.csv` uses exactly the same columns as the real `data/processed/players.csv` (`nbavalue/prepare.py`'s `PLAYER_COLUMNS`), and a test enforces it. The numbers are invented but internally consistent: points = 2 × FGM + 3PM + FTM, and offensive + defensive rebounds = total rebounds. Percentages are decimals from 0 to 1, as NBA.com sends them.
 
 | File | One row per | Notes |
 | --- | --- | --- |
-| `players.csv` | player | Season totals. `season` is `MOCK`. |
+| `players.csv` | player | Season totals. `season` is `MOCK`, `source` is `Mock`, `fetched_on` is blank. No listed position (the real table has none either). |
 | `salaries.csv` | player salary | Same format a real salary file will use: `source`, `source_url` and `retrieved_on` are required for real rows and blank here. |

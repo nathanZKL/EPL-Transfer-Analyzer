@@ -4,19 +4,19 @@ How data moves through the MVP. Data flows one way, from the sources down to the
 
 ## What exists today (step 2 in progress)
 
-The app still reads only the committed mock CSVs. The NBA.com fetch and prepare code exists and is tested with fake responses, but has not yet run against real NBA.com, and the app doesn't read its output yet.
+The app still reads only the committed mock CSVs. The NBA.com fetch and prepare code works: Nathan's first real fetch (2026-10-24) produced 582 players. The app doesn't read that output yet. Mock players already use the same columns as the real table (D17).
 
 | Piece | File | Status |
 | --- | --- | --- |
 | Data labels | `nbavalue/labels.py` | ✅ Built |
 | Shared column check | `nbavalue/checks.py` | ✅ Built (`require_columns`) |
 | Mock data loader + validation | `nbavalue/mock_data.py` | ✅ Built (raises `ValueError` on missing columns or non-`Mock` rows) |
-| NBA.com fetch | `nbavalue/fetch.py` | ✅ Built, untested against real NBA.com: base + advanced tables, 3 s pause, snapshot reuse |
+| NBA.com fetch | `nbavalue/fetch.py` | ✅ Built and run for real once: base + advanced tables, 3 s pause, snapshot reuse |
 | Prepare (field checks, mapping, labels) | `nbavalue/prepare.py` | ✅ Built: writes `data/processed/players.csv` with `NBA.com` label and `fetched_on` date |
 | Command | `nbavalue/update_data.py` | ✅ Built: `python -m nbavalue.update_data [--refresh]` |
-| Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built (columns are a first draft) |
+| Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
 | Streamlit app | `app.py` | ✅ Skeleton only: mock warning and two tables |
-| Tests | `tests/` | ✅ 18 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
+| Tests | `tests/` | ✅ 20 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
 | Everything else in the diagram | — | Planned |
 
 ## Technology stack
@@ -34,13 +34,13 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | Source | Status | Label | Notes |
 | --- | --- | --- | --- |
 | Mock data (`data/mock/`) | ✅ In use | `Mock` | Fictional, committed. Tests, demos, public screenshots. |
-| NBA.com stats via `nba_api`, 2025-26 | Code built, first real fetch pending (step 2) | `NBA.com` + fetch date | Personal, non-commercial use, with attribution. Never committed. Fetch runs on Nathan's machine only. |
+| NBA.com stats via `nba_api`, 2025-26 | ✅ Base + advanced fetched on Nathan's machine (step 2) | `NBA.com` + fetch date | Personal, non-commercial use, with attribution. Never committed. Fetch runs on Nathan's machine only. |
 | Salary CSV | Planned (step 3) | `Reported salary` + source, URL, date | Hand-built or from an optional scraper (site still open, O1). |
 | Basketball-Reference | ❌ Not used | — | Terms forbid it (D4). |
 
 ## Data flow
 
-Solid green boxes exist as code; dashed boxes are planned or hold data that hasn't been fetched yet.
+Solid green boxes exist; dashed boxes are planned. Real data lives only on Nathan's machine.
 
 ```mermaid
 flowchart TD
@@ -66,10 +66,11 @@ flowchart TD
   classDef built fill:#d4edda,stroke:#2e7d32,color:#000
   classDef planned fill:#fff,stroke:#888,stroke-dasharray:5 5,color:#000
   class MOCK,LOAD,APP,FS,PREP built
-  class NBA,SAL,RAW,TABLE,ROLES,ANA planned
+  class NBA,RAW,TABLE built
+  class SAL,ROLES,ANA planned
 ```
 
-Today the app reads mock data directly through `mock_data.py`. Once steps 2 to 4 land, mock data is meant to go through the same prepare and analysis path as real data. Exactly how is decided in step 2.
+Today the app reads mock data directly through `mock_data.py`. Because mock players share the real table's columns (D17), the step 4 analysis functions take either table unchanged.
 
 ## Planned components
 

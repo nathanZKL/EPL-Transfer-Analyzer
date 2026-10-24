@@ -6,43 +6,42 @@ A current snapshot for picking up work. Overwrite it at meaningful stopping poin
 
 ## Current objective
 
-Finish MVP **step 2: NBA.com data** on branch `step-2-nba-data`, draft PR #2 ([mvp-plan.md](mvp-plan.md#build-steps)). The code is built and tested offline; the first real fetch is next.
+Plan and build MVP **step 3: salary import** ([mvp-plan.md](mvp-plan.md#build-steps)). Nothing for step 3 has been started.
 
 ## Done
 
-- Step 1 skeleton merged (PR #1, 2026-10-23).
-- Project knowledge docs: `CLAUDE.md`, `docs/decisions.md`, `docs/handoff.md`, done criteria in `docs/mvp-plan.md` (first commit on the step 2 branch).
-- Step 2 code (approved plan, D15/D16):
-  - `nbavalue/fetch.py`: base + advanced tables from NBA.com's league player stats, 3 s pause, dated snapshots in `data/raw/2025-26/<date>/`, reuses the newest snapshot unless `--refresh`, resumes interrupted runs.
-  - `nbavalue/prepare.py`: field checks (errors list the columns NBA.com actually sent), one mapping from NBA.com to our column names, labels every row `NBA.com` with `fetched_on`, `source`, `season`; writes `data/processed/players.csv`.
-  - `nbavalue/update_data.py`: `python -m nbavalue.update_data`.
-  - `require_columns` moved to `nbavalue/checks.py` (no behaviour change).
-  - `nba_api>=1.12,<2` added to `requirements.txt`. Setup switched to `uv`.
+- Step 1 skeleton (PR #1, 2026-10-23).
+- Step 2 NBA.com data (PR #2, 2026-10-24):
+  - `python -m nbavalue.update_data` fetches base + advanced 2025-26 tables (`nbavalue/fetch.py`), checks, maps and labels them (`nbavalue/prepare.py`), and writes `data/processed/players.csv`.
+  - Nathan's first real fetch: 582 players; base and advanced column names confirmed.
+  - Mock players now use exactly the real table's columns, enforced by a test (D17).
+  - Setup uses `uv` (D16). Project knowledge docs are in place.
 
 ## Remaining
 
-- **Step 2:** first real fetch (Nathan); confirm advanced field names (O5); decide O8 and update the mock columns to the real schema; merge the PR.
-- Steps 3–6 in [mvp-plan.md](mvp-plan.md#build-steps). Open questions in [decisions.md](decisions.md#open).
+- Step 3: salary CSV format, validation, and matching salaries to NBA.com player IDs (needs O2). The scraper is optional and waits on O1.
+- Step 4: add hustle, tracking and play-type tables (O5), `config/roles.yaml` (O6), per-100 stats, percentiles (O4), fit and value scores (O3).
+- Steps 5–6 in the plan. Open questions are in [decisions.md](decisions.md#open).
 
 ## Known issues
 
-- **Advanced column names are unconfirmed** (`POSS`, `USG_PCT`, `AST_PCT`, `OREB_PCT`, `DREB_PCT`). If they're wrong, `update_data` stops with an error that lists the real columns; fix the mapping in `nbavalue/prepare.py`.
-- The prepared table has **no listed position**: the league stats endpoint doesn't return one. Needs another endpoint later.
-- Mock columns are still the step 1 draft and don't match the prepared table (O8). They lack possessions, FGA, FTA and offensive rebounds, so per-100 stats can't be tested on them yet.
+- **No listed position** in real or mock data: NBA.com's league stats table doesn't return one. Needs another endpoint if the app should show it.
+- Mock `salaries.csv` still matches players by name + team, with no `player_id`. Step 3 decides the real salary format (O2).
+- Real `age` and `minutes` arrive as decimals; mock values are whole numbers. Harmless so far.
 - README opening pitch still says "trade analyzer" (D1); fix in step 6.
 
-## Last verification (2026-10-24, macOS, Python 3.13.17 via uv, nba_api 1.12.0)
+## Last verification (2026-10-24, macOS, Python 3.13.17 via uv)
 
 | Check | Result |
 | --- | --- |
-| `pytest` | 18 passed |
+| `pytest` | 20 passed |
 | `ruff check .` | All checks passed |
 | `ruff format --check .` | Clean |
-| `nba_api` call arguments | Checked offline against the library's signature and parameter values |
-| Real NBA.com fetch | **Not run** |
+| Real fetch (`update_data`, Nathan's machine) | 582 players in both tables; all mapped columns present |
 
 ## Next concrete task
 
-1. Nathan runs `python -m nbavalue.update_data` and shares the printed column lists (no data values needed).
-2. Fix any advanced field names in `prepare.py`, then agree O8 and update `data/mock/` and its tests to the prepared table's columns.
-3. Merge step 2, then plan step 3 (salary import).
+Write the step 3 plan for Nathan to approve:
+- the salary CSV columns (start from mock `salaries.csv`: `source`, `source_url`, `retrieved_on` required for real rows);
+- the matching rule (O2; proposed: normalised name + team, with a manual override file);
+- how unmatched rows are reported.

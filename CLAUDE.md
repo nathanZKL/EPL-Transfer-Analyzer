@@ -8,7 +8,7 @@ NBA Player Value Analyzer: a local Streamlit app that answers *"Which NBA player
 
 **MVP boundaries:** 2025-26 NBA.com stats plus a sourced salary CSV; six role fit scores; a fit-vs-salary value view; a shortlist, comparison and method page. **Out:** trades, salary-cap rules, team needs, hosting, databases. Ideas go in the plan's "Ideas for later" table.
 
-Current status: step 1 of 6 (skeleton) is done; step 2 (NBA.com fetch) is in progress. The app still shows mock data only. See the handoff for what's next.
+Current status: step 1 of 6 (skeleton) is done; step 2 (NBA.com fetch) is done. The app still shows mock data only. See the handoff for what's next.
 
 ## Project docs: read before working
 
@@ -67,7 +67,7 @@ ruff format --check .                                # formatting check (use `ru
 
 There is no build step. Run `pytest`, `ruff check .` and `ruff format --check .` before every commit.
 
-Don't use the Mac's default `python3` (3.9.6): it fails at import (`StrEnum`). `update_data` reuses the newest saved snapshot; `--refresh` downloads again. It has not yet been run against real NBA.com.
+Don't use the Mac's default `python3` (3.9.6): it fails at import (`StrEnum`). `update_data` reuses the newest saved snapshot; `--refresh` downloads again. First real run: 2026-10-24, 582 players.
 
 ## Environment notes
 

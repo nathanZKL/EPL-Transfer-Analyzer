@@ -66,7 +66,7 @@ See [architecture.md](architecture.md).
 Six small pull requests, each reviewable and testable on its own.
 
 1. **Skeleton** – project layout, dependencies, lint and test setup, mock dataset and mock salary file, README. ✅ done (PR #1, merged 2026-10-23)
-2. **NBA.com data** – cached, rate-limited fetch for 2025-26, field checks, clean player table. Nathan runs the first real fetch.
+2. **NBA.com data** – cached, rate-limited fetch for 2025-26, field checks, clean player table. Nathan runs the first real fetch. ✅ done (PR #2, 2026-10-24). Hustle, tracking and play-type tables are deferred to step 4.
 3. **Salary import** – CSV format, validation, matching salaries to players.
 4. **Analysis** – per-100 stats, percentiles, role fit scores and value score, tested on mock data.
 5. **App** – shortlist, value chart and comparison screens.

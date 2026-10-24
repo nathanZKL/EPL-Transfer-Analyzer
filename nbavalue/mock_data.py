@@ -6,28 +6,9 @@ import pandas as pd
 
 from nbavalue.checks import require_columns
 from nbavalue.labels import DataLabel
+from nbavalue.prepare import PLAYER_COLUMNS
 
 MOCK_DIR = Path(__file__).resolve().parent.parent / "data" / "mock"
-
-PLAYER_COLUMNS = [
-    "player_id",
-    "player_name",
-    "team",
-    "position",
-    "age",
-    "season",
-    "games_played",
-    "minutes",
-    "points",
-    "rebounds",
-    "assists",
-    "steals",
-    "blocks",
-    "turnovers",
-    "fg3m",
-    "fg3a",
-    "data_label",
-]
 
 SALARY_COLUMNS = [
     "player_name",
