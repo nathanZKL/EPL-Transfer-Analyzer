@@ -10,6 +10,7 @@ venv/
 # Only data/mock/ (fictional) is committed.
 data/raw/
 data/processed/
+data/salaries/
 
 # Local secrets and settings
 .env

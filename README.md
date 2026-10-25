@@ -1,7 +1,7 @@
 # NBA-Player-Value-Analyzer
 An NBA trade analyzer that evaluates potential trades and player acquisitions using player performance, team needs, roster fit, and contract value to help identify moves that make sense for each team.
 
-> **Status: project skeleton (step 1 of 6).** The app currently runs on **mock data only**: fictional players, teams and salaries. Real NBA.com stats arrive in step 2.
+> **Status: step 3 of 6.** The app still shows **mock data only**: fictional players, teams and salaries. Commands to fetch real NBA.com stats and import salaries exist, but the app doesn't read their output yet.
 
 ## What the first version (MVP) will do
 
@@ -24,7 +24,7 @@ Every value the app shows carries a label:
 | `Estimate` | Something this app calculates, such as the value score (step 4) |
 | `Mock` | Fictional data for testing and demos. See [data/mock/README.md](data/mock/README.md) |
 
-Real data is downloaded to your own machine and is **never committed** to this repo (`data/raw/` and `data/processed/` are git-ignored). NBA.com's [terms](https://www.nba.com/terms) allow personal, non-commercial use with attribution, but not public republishing.
+Real data is downloaded to your own machine and is **never committed** to this repo (`data/raw/` and `data/processed/` are git-ignored). NBA.com's [terms](https://www.nba.com/terms) allow personal, non-commercial use with attribution, but not public republishing. (`data/salaries/` is git-ignored too.)
 
 ## Setup
 
@@ -62,6 +62,34 @@ python -m nbavalue.update_data
 
 This downloads 2025-26 player stats from NBA.com into `data/raw/2025-26/<date>/` (two requests, a few seconds apart) and builds `data/processed/players.csv`. Running it again reuses the saved files; add `--refresh` to download again. Both folders are git-ignored: NBA.com's terms allow personal use but not republishing. The app doesn't read this file yet.
 
+## Import salaries (optional, your own machine only)
+
+Salaries come from a CSV you make yourself, with a source on every row. Fetch the NBA.com stats first, then:
+
+1. Create `data/salaries/salaries_2025-26.csv` with these columns (the folder is git-ignored):
+
+   ```csv
+   player_name,team,season,salary_usd,source,source_url,retrieved_on,data_label
+   Example Player,BOS,2025-26,12500000,Site name,https://example.com/page,2026-10-24,Reported salary
+   ```
+
+   `salary_usd` is whole dollars. `retrieved_on` is the date you read it (YYYY-MM-DD). Every row needs a source and link.
+2. Run:
+
+   ```bash
+   python -m nbavalue.import_salaries
+   ```
+
+   It matches each row to an NBA.com player by name (accents, capitals, punctuation and Jr./III are ignored; the team only decides between players with the same name). It writes `data/processed/salaries.csv` and lists rows it couldn't match, with suggestions, in `data/processed/salary_unmatched.csv`.
+3. For a row that didn't match (often a nickname), add it to `data/salaries/overrides.csv` with the player's NBA.com ID from the suggestions, and run the command again:
+
+   ```csv
+   player_name,team,player_id,note
+   Nic Example,BKN,1234567,listed as Nicolas on NBA.com
+   ```
+
+Players without a salary are shown as missing, never guessed.
+
 ## Check the code
 
 ```bash
@@ -80,6 +108,8 @@ nbavalue/            Python code the app uses
   fetch.py           Downloads NBA.com stats politely, with a cache
   prepare.py         Checks and labels them as one row per player
   update_data.py     The command that runs fetch + prepare
+  salaries.py        Checks the salary CSV and matches it to players
+  import_salaries.py The command that imports salaries
 data/mock/           Fictional data, committed to the repo
 tests/               Automated checks
 docs/                Plan, architecture, decisions, handoff
