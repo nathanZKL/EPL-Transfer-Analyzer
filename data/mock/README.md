@@ -13,4 +13,4 @@ It exists so that:
 | File | One row per | Notes |
 | --- | --- | --- |
 | `players.csv` | player | Season totals. `season` is `MOCK`, `source` is `Mock`, `fetched_on` is blank. No listed position (the real table has none either). |
-| `salaries.csv` | player salary | Same format a real salary file will use: `source`, `source_url` and `retrieved_on` are required for real rows and blank here. |
+| `salaries.csv` | player salary | Same format as a real salary file (`nbavalue/salaries.py`'s `SALARY_COLUMNS`): `source`, `source_url` and `retrieved_on` are required for real rows and blank here. Tests check that every row matches a mock player by name. |

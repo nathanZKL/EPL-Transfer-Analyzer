@@ -7,19 +7,9 @@ import pandas as pd
 from nbavalue.checks import require_columns
 from nbavalue.labels import DataLabel
 from nbavalue.prepare import PLAYER_COLUMNS
+from nbavalue.salaries import SALARY_COLUMNS
 
 MOCK_DIR = Path(__file__).resolve().parent.parent / "data" / "mock"
-
-SALARY_COLUMNS = [
-    "player_name",
-    "team",
-    "season",
-    "salary_usd",
-    "source",
-    "source_url",
-    "retrieved_on",
-    "data_label",
-]
 
 
 def _load(filename: str, required: list[str]) -> pd.DataFrame:

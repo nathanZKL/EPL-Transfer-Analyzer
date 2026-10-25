@@ -8,6 +8,10 @@ Source for the 2026-10-23 entries: the MVP plan agreed with Nathan that day ([mv
 
 | # | Decision | Why | Tradeoff |
 | --- | --- | --- | --- |
+| D21 | **Unmatched salary rows are reported, not fatal.** The import prints them and writes `data/processed/salary_unmatched.csv` with up to three suggested players (Python's built-in `difflib`). Players without a salary stay missing. Two salary rows that match one player stop the import. (2026-10-24, step 3 plan approved by Nathan) | A few odd names shouldn't block everything, and nothing is guessed. | Nathan has to read the report after each import. |
+| D20 | **Real salary files live in `data/salaries/`** (`salaries_2025-26.csv`, `overrides.csv`), which is git-ignored. (2026-10-24, step 3) | Real data is never committed (D8); one obvious folder for hand-made files. | The files exist only on Nathan's machine, so he must back them up himself. |
+| D19 | **Override file** `data/salaries/overrides.csv` with `player_name, team, player_id, note`. An override always beats the automatic match; an unknown `player_id` stops the import. (2026-10-24, step 3) | Fixes nicknames and other names the rule can't match. | Manual upkeep for each odd name. |
+| D18 | **Salaries match players by normalised name; the team only breaks ties.** Normalising removes accents, case, punctuation and Jr./Sr./II–V. If the team can't settle a shared name, the row is unmatched. Resolves O2. (2026-10-24, step 3) | Traded players and different team codes (GS vs GSW) would break a name + team rule. | Nicknames (Nic vs Nicolas) need an override. |
 | D17 | **Mock players use exactly the real table's columns** (`prepare.PLAYER_COLUMNS`), enforced by a test. Listed position was dropped from mock data. Resolves O8. (2026-10-24) | Analysis code and tests written against mock data work unchanged on real data. | The mock numbers had to be extended by hand; position is gone until a real source for it is added. |
 | D16 | **Set up Python with `uv`** (`uv venv --python 3.13`). Resolves O7. (2026-10-24) | The Mac's default `python3` is 3.9.6; `uv` was already installed and fetches 3.13 itself. | One more tool to learn; plain `pip` still works inside the venv. |
 | D15 | **NBA.com column names live only in `nbavalue/prepare.py`'s mappings**; everything downstream uses our own snake_case names. Step 2 fetches only the base and advanced tables, pausing 3 seconds between requests and reusing the newest saved snapshot unless `--refresh`. (2026-10-24, step 2 plan approved by Nathan) | A renamed NBA.com field is a one-line fix; fewer requests while field names are unconfirmed. | Hustle, tracking and play-type stats wait for a follow-up. The 3-second pause is a guess; NBA.com publishes no limits. |
@@ -31,7 +35,6 @@ Source for the 2026-10-23 entries: the MVP plan agreed with Nathan that day ([mv
 | # | Question | Current assumption | Blocks | Who decides |
 | --- | --- | --- | --- | --- |
 | O1 | **Which salary site, if any, to scrape:** Spotrac or HoopsHype. | Fallback is a hand-built CSV. Nathan is checking terms and robots.txt. | Step 3 scraper (not the CSV import) | Nathan |
-| O2 | **Salary-to-player matching rule.** | Normalised name plus team, with a small manual override file. | Step 3 | Nathan, in step 3 PR |
 | O3 | **Role weights.** | Starting guesses in `config/roles.yaml`, tuned once real rankings exist. | Step 4 tuning | Nathan |
 | O4 | **Minimum minutes for percentiles.** | 500 minutes. | Step 4 | Nathan |
 | O5 | **NBA.com field names for the hustle, tracking and play-type stats the roles need.** | Base and advanced names were confirmed by Nathan's first real fetch (2026-10-24, 582 players). The other tables aren't fetched yet. | Step 4 | Confirmed from data when those tables are added |

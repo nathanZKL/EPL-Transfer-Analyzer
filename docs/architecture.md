@@ -2,9 +2,9 @@
 
 How data moves through the MVP. Data flows one way, from the sources down to the app, and each step hands the next a plain CSV file. Decisions referenced as D# / O# are in [decisions.md](decisions.md).
 
-## What exists today (step 2 in progress)
+## What exists today (step 3 built)
 
-The app still reads only the committed mock CSVs. The NBA.com fetch and prepare code works: Nathan's first real fetch (2026-10-24) produced 582 players. The app doesn't read that output yet. Mock players already use the same columns as the real table (D17).
+The app still reads only the committed mock CSVs. The NBA.com fetch and prepare code works: Nathan's first real fetch (2026-10-24) produced 582 players. The salary import checks a hand-made salary CSV and matches it to those players. The app doesn't read either output yet. Mock players already use the same columns as the real table (D17).
 
 | Piece | File | Status |
 | --- | --- | --- |
@@ -14,9 +14,11 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | NBA.com fetch | `nbavalue/fetch.py` | ✅ Built and run for real once: base + advanced tables, 3 s pause, snapshot reuse |
 | Prepare (field checks, mapping, labels) | `nbavalue/prepare.py` | ✅ Built: writes `data/processed/players.csv` with `NBA.com` label and `fetched_on` date |
 | Command | `nbavalue/update_data.py` | ✅ Built: `python -m nbavalue.update_data [--refresh]` |
+| Salary check and match | `nbavalue/salaries.py` | ✅ Built: validates the salary CSV, matches by normalised name with team as tie-break and an override file (D18–D21) |
+| Salary command | `nbavalue/import_salaries.py` | ✅ Built: `python -m nbavalue.import_salaries` writes `data/processed/salaries.csv` and `salary_unmatched.csv`. Not yet run on real salaries |
 | Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
 | Streamlit app | `app.py` | ✅ Skeleton only: mock warning and two tables |
-| Tests | `tests/` | ✅ 20 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
+| Tests | `tests/` | ✅ 50 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
 | Everything else in the diagram | — | Planned |
 
 ## Technology stack
@@ -35,7 +37,7 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | --- | --- | --- | --- |
 | Mock data (`data/mock/`) | ✅ In use | `Mock` | Fictional, committed. Tests, demos, public screenshots. |
 | NBA.com stats via `nba_api`, 2025-26 | ✅ Base + advanced fetched on Nathan's machine (step 2) | `NBA.com` + fetch date | Personal, non-commercial use, with attribution. Never committed. Fetch runs on Nathan's machine only. |
-| Salary CSV | Planned (step 3) | `Reported salary` + source, URL, date | Hand-built or from an optional scraper (site still open, O1). |
+| Salary CSV (`data/salaries/`, git-ignored) | ✅ Import built (step 3); Nathan builds the file by hand | `Reported salary` + source, URL, date | An optional scraper could fill it later (site still open, O1). |
 | Basketball-Reference | ❌ Not used | — | Terms forbid it (D4). |
 
 ## Data flow
@@ -45,29 +47,32 @@ Solid green boxes exist; dashed boxes are planned. Real data lives only on Natha
 ```mermaid
 flowchart TD
   NBA["NBA.com stats via nba_api<br/>(Nathan's machine only)"]
-  SAL["Salary CSV<br/>hand-built or optional scraper (O1)"]
+  SAL[("data/salaries/<br/>salary CSV + overrides, git-ignored")]
+  SALM["nbavalue/salaries.py<br/>checks, name match (D18)"]
+  STAB[("data/processed/salaries.csv<br/>+ salary_unmatched.csv")]
   FS["nbavalue/fetch.py<br/>cached, 3 s between requests"]
   RAW[("data/raw/<br/>dated snapshots, git-ignored")]
   MOCK[("data/mock/*.csv<br/>fictional, committed")]
   LOAD["nbavalue/mock_data.py<br/>column + label checks"]
-  PREP["nbavalue/prepare.py<br/>field checks, labels<br/>(salary match in step 3, O2)"]
+  PREP["nbavalue/prepare.py<br/>field checks, labels"]
   TABLE[("data/processed/players.csv<br/>git-ignored")]
   ROLES["config/roles.yaml<br/>role recipes (O3, O6)"]
   ANA["nbavalue analysis<br/>per-100, percentiles, fit, value"]
   APP["app.py (Streamlit, local)"]
 
   NBA --> FS --> RAW --> PREP
-  SAL --> PREP
   PREP --> TABLE --> ANA --> APP
+  SAL --> SALM --> STAB --> ANA
+  TABLE --> SALM
   ROLES --> ANA
   MOCK --> LOAD --> APP
   MOCK -.-> PREP
 
   classDef built fill:#d4edda,stroke:#2e7d32,color:#000
   classDef planned fill:#fff,stroke:#888,stroke-dasharray:5 5,color:#000
-  class MOCK,LOAD,APP,FS,PREP built
-  class NBA,RAW,TABLE built
-  class SAL,ROLES,ANA planned
+  class MOCK,LOAD,APP,FS,PREP,SALM built
+  class NBA,RAW,TABLE,SAL,STAB built
+  class ROLES,ANA planned
 ```
 
 Today the app reads mock data directly through `mock_data.py`. Because mock players share the real table's columns (D17), the step 4 analysis functions take either table unchanged.
@@ -77,8 +82,7 @@ Today the app reads mock data directly through `mock_data.py`. Because mock play
 | Component | What it does | Step |
 | --- | --- | --- |
 | Hustle, tracking, play-type tables | More `fetch.TABLES` entries and mappings, added once real base/advanced output has been seen. | 2 follow-up or 4 |
-| Salary import / match | Reads the salary CSV, joins each row to an NBA.com player ID. Unmatched rows are listed for a human, never silently dropped. | 3 |
-| `scrape_salaries` | Optional. Writes the same CSV format, only after the site's terms and robots.txt are checked. | 3 |
+| `scrape_salaries` | Optional. Writes the same CSV format, only after the site's terms and robots.txt are checked (O1). | Later |
 | `data/processed/players.csv` | One row per player, rebuilt from raw files. Git-ignored. | 2–3 |
 | `config/roles.yaml` | Six role recipes (stats and weights), editable without code changes. | 4 |
 | Analysis library | Pure functions: per-100 stats, league percentiles with a minimum-minutes cut, role fit (0–100), value score. Most heavily tested part. | 4 |

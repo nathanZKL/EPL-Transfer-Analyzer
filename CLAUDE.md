@@ -8,7 +8,7 @@ NBA Player Value Analyzer: a local Streamlit app that answers *"Which NBA player
 
 **MVP boundaries:** 2025-26 NBA.com stats plus a sourced salary CSV; six role fit scores; a fit-vs-salary value view; a shortlist, comparison and method page. **Out:** trades, salary-cap rules, team needs, hosting, databases. Ideas go in the plan's "Ideas for later" table.
 
-Current status: step 1 of 6 (skeleton) is done; step 2 (NBA.com fetch) is done. The app still shows mock data only. See the handoff for what's next.
+Current status: steps 1 (skeleton) and 2 (NBA.com fetch) are merged; step 3 (salary import) is built, PR pending. The app still shows mock data only. See the handoff for what's next.
 
 ## Project docs: read before working
 
@@ -60,6 +60,7 @@ uv venv --python 3.13 .venv && source .venv/bin/activate   # one-time setup (uv,
 uv pip install -r requirements-dev.txt               # install
 streamlit run app.py                                 # run the app (http://localhost:8501)
 python -m nbavalue.update_data                       # fetch NBA.com stats (Nathan's machine only)
+python -m nbavalue.import_salaries                   # match data/salaries/ to players (after update_data)
 pytest                                               # tests, including a headless app smoke test
 ruff check .                                         # lint
 ruff format --check .                                # formatting check (use `ruff format .` to fix)
