@@ -75,12 +75,13 @@ def test_lower_opponent_shooting_at_the_rim_ranks_higher():
 
 
 def test_missing_stat_gets_no_percentile_and_others_rank_without_it():
-    df = players(iso_poss=[np.nan, 5, 10], possessions=[1000, 1000, 1000])
+    # E.g. a player the hustle table leaves out: unknown, so not ranked.
+    df = players(deflections=[np.nan, 5, 10], possessions=[1000, 1000, 1000])
 
     ranked = analysis.percentiles(df)
 
-    assert pd.isna(ranked.loc[0, "iso_poss_per100_pctile"])
-    assert list(ranked["iso_poss_per100_pctile"][1:]) == [50.0, 100.0]
+    assert pd.isna(ranked.loc[0, "deflections_per100_pctile"])
+    assert list(ranked["deflections_per100_pctile"][1:]) == [50.0, 100.0]
 
 
 def test_mock_dataset_matches_hand_checked_values():
@@ -96,14 +97,54 @@ def test_mock_dataset_matches_hand_checked_values():
     assert ranked.loc[900003, "blocks_per100_pctile"] == pytest.approx(100 * 10 / 12)
 
 
+def test_efficiency_on_too_few_attempts_gets_no_percentile():
+    df = players(
+        iso_poss=[24, 25, 50],
+        iso_pts=[48, 20, 50],
+        pullup_fga=[49, 50, 80],
+        pullup_fgm=[49, 20, 40],
+    )
+
+    ranked = analysis.percentiles(df)
+
+    # 24 isolations at 2.0 per play would top the league; under the 25 minimum it isn't ranked.
+    assert pd.isna(ranked.loc[0, "iso_ppp_pctile"])
+    assert list(ranked["iso_ppp_pctile"][1:]) == [50.0, 100.0]
+    assert pd.isna(ranked.loc[0, "pullup_fg_pct_pctile"])
+    assert list(ranked["pullup_fg_pct_pctile"][1:]) == [50.0, 100.0]
+
+
+def test_minimum_attempts_are_25_plays_and_50_pullups():
+    assert analysis.MIN_ATTEMPTS == {
+        "iso_ppp": ("iso_poss", 25),
+        "roll_man_ppp": ("roll_man_poss", 25),
+        "putback_ppp": ("putback_poss", 25),
+        "pullup_fg_pct": ("pullup_fga", 50),
+    }
+
+
+def test_play_type_volume_blank_ranks_tied_for_last():
+    # NBA.com leaves out players with fewer than 10 isolations, so a blank is the fewest.
+    df = players(iso_poss=[np.nan, np.nan, 20, 40], possessions=[1000] * 4)
+
+    ranked = analysis.percentiles(df)
+
+    # The two blanks share the bottom two places (ranks 1 and 2 of 4, averaged).
+    assert list(ranked["iso_poss_per100_pctile"]) == [37.5, 37.5, 75.0, 100.0]
+    # Their isolation efficiency is still unknown, so it isn't ranked.
+    assert ranked["iso_ppp_pctile"][:2].isna().all()
+
+
 def test_every_role_stat_gets_a_percentile_on_the_mock_dataset():
     ranked = analysis.percentiles(mock_data.load_players())
 
     assert list(ranked.columns) == ["player_id", *[f"{s}_pctile" for s in analysis.STATS]]
     assert len(ranked) == 12
     values = ranked.drop(columns="player_id")
-    assert values.notna().all().all()
-    assert ((values > 0) & (values <= 100)).all().all()
+    # Only efficiency below the attempt minimums may be blank.
+    blank = values.columns[values.isna().any()]
+    assert set(blank) <= {f"{s}_pctile" for s in analysis.MIN_ATTEMPTS}
+    assert ((values > 0) & (values <= 100) | values.isna()).all().all()
 
 
 def test_player_table_without_a_needed_column_is_refused():

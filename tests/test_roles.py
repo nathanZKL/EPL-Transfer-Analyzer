@@ -91,13 +91,22 @@ def test_fit_score_is_weighted_average_checked_by_hand():
     assert scores["player_id"].tolist() == [9001, 9002]
 
 
-def test_missing_stat_gives_missing_score_only_for_roles_using_it():
-    uses_it = Role("Uses blocks", {"blocks_per100": 1, "dreb_pct": 1})
-    ignores_it = Role("Rebounds only", {"dreb_pct": 1})
+def test_missing_stat_is_left_out_and_other_weights_count_for_more():
+    role = Role("Three stats", {"blocks_per100": 0.4, "rim_dfg_pct": 0.4, "dreb_pct": 0.2})
+    table = pctile_table(blocks_per100=[NAN, 60.0], rim_dfg_pct=[50.0, 30.0], dreb_pct=[80.0, 20.0])
+    scores = roles.fit_scores(table, {"r": role})
+    # Player 9001 has no blocks percentile: (0.4*50 + 0.2*80) / (0.4 + 0.2) = 60, not 36.
+    assert scores.loc[0, "r"] == pytest.approx(60.0)
+    # Player 9002 has all three: 0.4*60 + 0.4*30 + 0.2*20 = 40.
+    assert scores.loc[1, "r"] == pytest.approx(40.0)
+
+
+def test_player_with_none_of_a_roles_stats_gets_no_score():
+    uses_it = Role("Blocks only", {"blocks_per100": 1})
+    other = Role("Rebounds only", {"dreb_pct": 1})
     table = pctile_table(blocks_per100=[NAN, 60.0], dreb_pct=[80.0, 20.0])
-    scores = roles.fit_scores(table, {"a": uses_it, "b": ignores_it})
+    scores = roles.fit_scores(table, {"a": uses_it, "b": other})
     assert math.isnan(scores.loc[0, "a"])
-    assert scores.loc[1, "a"] == pytest.approx(40.0)
     assert scores["b"].tolist() == pytest.approx([80.0, 20.0])
     assert len(scores) == 2  # the player is kept, not dropped
 

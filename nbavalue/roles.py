@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from nbavalue.analysis import STATS
 from nbavalue.checks import require_columns
 from nbavalue.labels import DataLabel
 
@@ -22,28 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ROLES_PATH = ROOT / "config" / "roles.toml"
 
 # Every stat the percentile table provides. Role recipes may only use these.
-KNOWN_STATS = (
-    "blocks_per100",
-    "dreb_pct",
-    "rim_dfg_pct",
-    "fg3a_rate",
-    "fg3_pct",
-    "deflections_per100",
-    "contested_shots_per100",
-    "usg_pct",
-    "ast_pct",
-    "pnr_bh_poss_per100",
-    "iso_poss_per100",
-    "pullup_fga_per100",
-    "points_per100",
-    "iso_ppp",
-    "pullup_fg_pct",
-    "oreb_pct",
-    "roll_man_ppp",
-    "putback_ppp",
-    "ast_to_tov",
-    "screen_assists_per100",
-)
+KNOWN_STATS = tuple(STATS)
 PCTILE_SUFFIX = "_pctile"
 ROLE_KEYS = {"label", "weights"}
 
@@ -96,8 +76,9 @@ def load_roles(path: Path = ROLES_PATH) -> dict[str, Role]:
 def fit_scores(pctiles: pd.DataFrame, roles: dict[str, Role]) -> pd.DataFrame:
     """One 0-100 fit score column per role: the weighted average of its stat percentiles.
 
-    A player missing any of a role's stats gets a missing score for that role (open question
-    O9); it is never filled in. Output: `player_id`, one column per role key, `data_label`.
+    A stat with no percentile is left out of that player's average and the other weights
+    count for more (D29); nothing is filled in. Only a player with none of a role's stats gets
+    a missing score. Output: `player_id`, one column per role key, `data_label`.
     """
     needed = sorted({pctile_column(stat) for role in roles.values() for stat in role.weights})
     require_columns(pctiles, ["player_id", *needed], "percentile table")
@@ -112,8 +93,10 @@ def fit_scores(pctiles: pd.DataFrame, roles: dict[str, Role]) -> pd.DataFrame:
     scores = pd.DataFrame({"player_id": pctiles["player_id"]})
     for key, role in roles.items():
         weights = pd.Series({pctile_column(stat): w for stat, w in role.weights.items()})
-        weighted = pctiles[weights.index].mul(weights, axis=1).sum(axis=1, skipna=False)
-        scores[key] = weighted / weights.sum()
+        stats = pctiles[weights.index]
+        weight_present = stats.notna().mul(weights, axis=1).sum(axis=1)
+        weighted = stats.mul(weights, axis=1).sum(axis=1)  # missing stats add nothing
+        scores[key] = (weighted / weight_present).where(weight_present > 0)
     scores["data_label"] = str(DataLabel.ESTIMATE)
     return scores.reset_index(drop=True)
 
