@@ -2,7 +2,8 @@
 
 Reads role recipes from config/roles.toml, turns a league percentile table into a 0-100 fit
 score per role, and compares fit with salary (decision D10). Both scores are our own
-estimates, labelled `Estimate`. Missing inputs give missing scores; nothing is guessed.
+estimates, labelled `Estimate`. Nothing is guessed: a stat with no percentile is left out of
+that player's average (D29), and a missing salary gives a missing value score.
 
 The percentile table comes from the analysis step: a `player_id` column plus one
 `<stat>_pctile` column (0-100, higher is better, NaN when missing) per stat in KNOWN_STATS.

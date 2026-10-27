@@ -28,7 +28,8 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 ## Remaining
 
 - Merge PR #5, then 4b's PR.
-- Open question for Nathan: a minimum for 3-point % (`fg3_pct`), which the 3-and-D wing role uses. A player 2-for-3 from three currently ranks near the top.
+- Open question for Nathan: a minimum for 3-point % (`fg3_pct`, used by 3-and-D wing). Nathan proposed 200 attempts; Claude suggested 100. Real data (378 qualifying): 300 keep a percentile at 100, 191 at 200; 37 of the 100 most 3-heavy shooters have under 200.
+- Step 5: show the 3 salaried players under 500 minutes as "not ranked", not hidden (PR #6 review).
 - Steps 5–6 in the plan.
 
 ## Known issues
@@ -44,7 +45,7 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 
 | Check | Result |
 | --- | --- |
-| `pytest` | 104 passed (branch `step-4b-roles`) |
+| `pytest` | 106 passed (branch `step-4b-roles`) |
 | `ruff check .` | All checks passed |
 | `ruff format --check .` | Clean |
 | Real fetch (`update_data --refresh`, Nathan) | 9 tables, 582 players, all fields mapped |

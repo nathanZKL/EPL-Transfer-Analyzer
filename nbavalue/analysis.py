@@ -63,9 +63,9 @@ STATS = [
 # Opponents shooting worse near a defender is good, so this percentile is flipped.
 LOWER_IS_BETTER = {"rim_dfg_pct"}
 
-# NBA.com's play-type tables only list players with 10+ possessions of that type (seen in
-# Nathan's 2026-10-26 fetch), so a blank here means "fewer than 10", not "unknown". These
-# blanks are ranked tied for last instead of left out (D29).
+# NBA.com's play-type tables only list players with 10+ possessions of that type
+# (`prepare.check_listing_floor` re-checks this on every build), so a blank here means
+# "fewer than 10", not "unknown". These blanks rank tied for last instead of left out (D29).
 BLANK_MEANS_FEWER_THAN_10 = {"pnr_bh_poss_per100", "iso_poss_per100"}
 
 # Efficiency on fewer attempts than this gets no percentile (D30): stat -> (attempts, minimum).
