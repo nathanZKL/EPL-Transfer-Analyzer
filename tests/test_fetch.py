@@ -65,8 +65,31 @@ def test_interrupted_run_resumes_without_repeating_requests(client, tmp_path, pa
 
     run(client, tmp_path, pauses)
 
-    assert [c["measure_type_detailed_defense"] for c in client.calls] == ["Advanced"]
-    assert pauses == []
+    assert client.calls == [fetch.TABLES[t] for t in fetch.TABLES if t != "base"]
+    assert pauses == [fetch.PAUSE_SECONDS] * (len(fetch.TABLES) - 2)
+
+
+def test_snapshot_from_before_the_extra_tables_is_not_reused(client, tmp_path, pauses):
+    # A step-2 snapshot holds only base and advanced, so the next run downloads everything.
+    old = fetch.snapshot_dir(DAY_1, tmp_path)
+    old.mkdir(parents=True)
+    for table in ["base", "advanced"]:
+        pd.DataFrame({"PLAYER_ID": [1]}).to_csv(old / f"{table}.csv", index=False)
+
+    snapshot = run(client, tmp_path, pauses, today=DAY_2)
+
+    assert snapshot.name == "2026-10-25"
+    assert len(client.calls) == len(fetch.TABLES)
+
+
+def test_every_table_names_a_known_endpoint():
+    assert {params["endpoint"] for params in fetch.TABLES.values()} == {
+        "players",
+        "hustle",
+        "defense",
+        "tracking",
+        "play_type",
+    }
 
 
 def test_empty_response_stops_with_clear_error(tmp_path, pauses):

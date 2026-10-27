@@ -6,49 +6,46 @@ A current snapshot for picking up work. Overwrite it at meaningful stopping poin
 
 ## Current objective
 
-Close out MVP **step 3: salary import** ([mvp-plan.md](mvp-plan.md#build-steps)). The code is merged (PR #3). Branch `step-3-followups` carries the review fixes (D22, D23) and these doc updates. What's left is merging it and Nathan's first real import.
+MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#build-steps)).
+- **4a** (branch `step-4a-stats`, PR open): 7 more NBA.com tables, per-100 stats and league percentiles in `nbavalue/analysis.py`. Waiting on Nathan's `python -m nbavalue.update_data --refresh` to confirm the new field names (O5), then merge.
+- **4b** (branch `step-4b-roles`, built and committed locally in a worktree, not pushed): `config/roles.toml`, `nbavalue/roles.py` with fit and value scores. Rebase onto main after 4a merges, then open its PR.
 
 ## Done
 
-- Step 1 skeleton (PR #1, 2026-10-23).
-- Step 2 NBA.com data (PR #2, 2026-10-24): `python -m nbavalue.update_data` writes `data/processed/players.csv` (first real run: 582 players).
-- Step 3 salary import (PR #3, merged 2026-10-25):
-  - `nbavalue/salaries.py` validates the salary CSV (columns, labels, season, whole-dollar salary, source/URL/date on real rows, with CSV line numbers in errors) and matches rows to `player_id` by normalised name, using the team only to break ties (D18), plus `data/salaries/overrides.csv` (D19).
-  - `python -m nbavalue.import_salaries` writes `data/processed/salaries.csv` and `salary_unmatched.csv` with suggestions (D21). `data/salaries/` is git-ignored (D20).
-  - All 582 real normalised names are distinct, so the tie-break isn't needed for 2025-26.
-- Step 3 follow-ups (branch `step-3-followups`, 2026-10-26, from the PR #3 review):
-  - `salary_usd` must be plain digits, so Excel's `5.52E+07` can't sneak in a rounded salary (D23).
-  - An override that fits no salary row stops the import (D23).
-  - The unmatched message, import output and README explain that players with no 2025-26 games stay unmatched (D22). Fetching NBA.com's full player list is in "Ideas for later".
-- Nathan's `data/salaries/salaries_2025-26.csv` has 20 hand-copied Spotrac rows (2025-26 cap hits). All pass validation; a read-only check found no misspelled names.
+- Steps 1–3 merged (PRs #1–#4). Step 3: salary import with name matching and overrides (D18–D23). Nathan's first real import (2026-10-26): 19 of 20 rows matched; Tyrese Haliburton unmatched as expected (no 2025-26 games, D22).
+- Decisions agreed 2026-10-26: step split and "Done when" confirmed (D24), 500-minute cut (D25), `config/roles.toml` with `tomllib` (D26), starting weights are Claude's guesses (D27).
+- Step 4a code:
+  - `fetch.TABLES` has 9 tables; each names its endpoint (`players`, `hustle`, `defense`, `tracking`, `play_type`). An old 2-table snapshot counts as incomplete, so the next run downloads all 9.
+  - `prepare.EXTRA_COLUMNS` keeps counting stats only, adds up a traded player's rows, and left-joins onto the base table so omitted players stay missing. An extra table listing a player base.csv lacks stops the build.
+  - `analysis.py`: `add_rates`, `qualifying`, `percentiles` (returns `player_id` + `<stat>_pctile` for the 20 stats in `analysis.STATS`; the contract 4b consumes).
+  - Mock players gained the 15 new columns (fictional values).
 
 ## Remaining
 
-- Merge `step-3-followups`.
-- Nathan runs `python -m nbavalue.import_salaries` and shares the summary lines (not the data). Expected: 19 of 20 matched; Tyrese Haliburton unmatched (no 2025-26 games, D22).
-- Before step 4, Nathan answers O4 (minimum minutes, suggested 500), O6 (roles config: TOML recommended, no new dependency) and confirms the "Done when" table in the plan. O3 weights can start as guesses.
-- Step 4: add hustle, tracking and play-type tables (O5), roles config (O6), per-100 stats, percentiles (O4), fit and value scores (O3). Analysis joins `players.csv` with `salaries.csv` on `player_id`.
-- Steps 5–6 in the plan. Open questions are in [decisions.md](decisions.md#open).
+- Nathan runs `update_data --refresh`. If a pull-up or play-type column name is wrong, the error lists what NBA.com sent; fix the mapping in `prepare.EXTRA_COLUMNS` (one line).
+- Then check, on real data: how many 500+ minute players are missing from each play-type table (feeds O9 in 4b), and whether hustle/rim-defence tables ever list a traded player twice.
+- Merge 4a, rebase 4b, reconcile docs (4b numbered its open question O9; 4b's architecture rows and test count will conflict with 4a's), open 4b's PR.
+- Steps 5–6 in the plan.
 
 ## Known issues
 
 - **No listed position** in real or mock data: NBA.com's league stats table doesn't return one.
-- Players with no 2025-26 games (e.g. Tyrese Haliburton) aren't in NBA.com's table, so their salaries always stay unmatched (D22). Fix later via NBA.com's full player list (plan, "Ideas for later").
-- Mock `salaries.csv` has no `player_id`; that's by design, since it goes through the same name matching as a real file.
-- Real `age` and `minutes` arrive as decimals; mock values are whole numbers. Harmless so far.
+- Players with no 2025-26 games (e.g. Tyrese Haliburton) aren't in NBA.com's table, so their salaries stay unmatched (D22). Fix later via NBA.com's full player list ("Ideas for later").
+- Only 19 real salaries so far, so salary percentiles (4b) are rough until the salary file covers most of the league.
+- Efficiency stats on tiny samples (e.g. a few isolations) can rank very high or low; a minimum-possessions rule is likely needed in 4b.
+- Nathan's current `data/processed/players.csv` predates 4a and lacks the new columns until he refreshes.
 - README opening pitch still says "trade analyzer" (D1); fix in step 6.
 - Low-priority review notes (not fixed): duplicate override keys silently use the last one; `load_overrides` checks have no tests; duplicate salary rows that are both unmatched aren't flagged.
 
-## Last verification (2026-10-26, macOS, Python 3.13.17 via uv)
+## Last verification (2026-10-26, macOS, Python 3.13.17 via uv, branch `step-4a-stats`)
 
 | Check | Result |
 | --- | --- |
-| `pytest` | 54 passed |
+| `pytest` | 70 passed |
 | `ruff check .` | All checks passed |
 | `ruff format --check .` | Clean |
-| Real salary file validation (`load_salaries`) | 20 rows valid |
-| Real import (`import_salaries`, Nathan's machine) | Not run yet |
+| Real fetch of the 7 new tables | Not run yet |
 
 ## Next concrete task
 
-Merge `step-3-followups`, then Nathan runs `python -m nbavalue.import_salaries` and pastes the summary. Then answer O4/O6, confirm "Done when", and plan step 4.
+Nathan: `python -m nbavalue.update_data --refresh`, then paste the printed `*.csv columns:` lines for the new tables (and any error). Then merge 4a.

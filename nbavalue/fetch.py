@@ -15,10 +15,17 @@ SEASON = "2025-26"
 RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 PAUSE_SECONDS = 3
 
-# Each table is one request to NBA.com's league-wide player stats endpoint.
+# Each table is one request: `endpoint` picks the NBA.com endpoint, the rest are its settings.
 TABLES = {
-    "base": {"measure_type_detailed_defense": "Base"},
-    "advanced": {"measure_type_detailed_defense": "Advanced"},
+    "base": {"endpoint": "players", "measure_type_detailed_defense": "Base"},
+    "advanced": {"endpoint": "players", "measure_type_detailed_defense": "Advanced"},
+    "hustle": {"endpoint": "hustle"},
+    "rim_defense": {"endpoint": "defense", "defense_category": "Less Than 6Ft"},
+    "pullup": {"endpoint": "tracking", "pt_measure_type": "PullUpShot"},
+    "pnr_ball_handler": {"endpoint": "play_type", "play_type_nullable": "PRBallHandler"},
+    "isolation": {"endpoint": "play_type", "play_type_nullable": "Isolation"},
+    "roll_man": {"endpoint": "play_type", "play_type_nullable": "PRRollman"},
+    "putbacks": {"endpoint": "play_type", "play_type_nullable": "OffRebound"},
 }
 
 Client = Callable[[dict], pd.DataFrame]
@@ -26,16 +33,39 @@ Client = Callable[[dict], pd.DataFrame]
 
 def nba_api_client(params: dict) -> pd.DataFrame:
     """Fetch one table of regular-season season totals for every player from NBA.com."""
-    from nba_api.stats.endpoints import leaguedashplayerstats  # imported here: network code
-
-    endpoint = leaguedashplayerstats.LeagueDashPlayerStats(
-        season=SEASON,
-        season_type_all_star="Regular Season",
-        per_mode_detailed="Totals",
-        timeout=60,
-        **params,
+    # Imported here: network code, never loaded by tests.
+    from nba_api.stats.endpoints import (
+        leaguedashplayerstats,
+        leaguedashptdefend,
+        leaguedashptstats,
+        leaguehustlestatsplayer,
+        synergyplaytypes,
     )
-    return endpoint.get_data_frames()[0]
+
+    settings = {k: v for k, v in params.items() if k != "endpoint"}
+    common = {"season": SEASON, "season_type_all_star": "Regular Season", "timeout": 60}
+    endpoints = {
+        "players": lambda: leaguedashplayerstats.LeagueDashPlayerStats(
+            per_mode_detailed="Totals", **common, **settings
+        ),
+        "hustle": lambda: leaguehustlestatsplayer.LeagueHustleStatsPlayer(
+            per_mode_time="Totals", **common, **settings
+        ),
+        "defense": lambda: leaguedashptdefend.LeagueDashPtDefend(
+            per_mode_simple="Totals", **common, **settings
+        ),
+        "tracking": lambda: leaguedashptstats.LeagueDashPtStats(
+            per_mode_simple="Totals", player_or_team="Player", **common, **settings
+        ),
+        "play_type": lambda: synergyplaytypes.SynergyPlayTypes(
+            per_mode_simple="Totals",
+            player_or_team_abbreviation="P",
+            type_grouping_nullable="offensive",
+            **common,
+            **settings,
+        ),
+    }
+    return endpoints[params["endpoint"]]().get_data_frames()[0]
 
 
 def snapshot_dir(fetched_on: date, raw_dir: Path = RAW_DIR) -> Path:

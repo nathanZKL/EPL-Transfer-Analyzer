@@ -16,8 +16,9 @@ data/salaries/
 .env
 .streamlit/secrets.toml
 
-# Local code-review reports
+# Local Claude Code files: review reports and agent worktrees
 .claude/reviews/
+.claude/worktrees/
 
 # OS / editor
 .DS_Store
