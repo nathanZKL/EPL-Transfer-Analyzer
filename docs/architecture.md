@@ -17,6 +17,8 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | Command | `nbavalue/update_data.py` | ✅ Built: `python -m nbavalue.update_data [--refresh]` |
 | Salary check and match | `nbavalue/salaries.py` | ✅ Built: validates the salary CSV, matches by normalised name with team as tie-break and an override file (D18–D21); digits-only salaries and no unused overrides (D23); players with no 2025-26 games stay unmatched (D22) |
 | Salary command | `nbavalue/import_salaries.py` | ✅ Built: `python -m nbavalue.import_salaries` writes `data/processed/salaries.csv` and `salary_unmatched.csv`. Not yet run on real salaries |
+| Role recipes | `config/roles.toml` | ✅ Built (step 4b): six starter roles, each a list of stats with weights; Claude's starting guesses (O3), read with Python's built-in `tomllib` (no new dependency) |
+| Fit and value scores | `nbavalue/roles.py` | ✅ Built (step 4b): `load_roles` checks the config loudly; `fit_scores` = weighted average of a player's stat percentiles per role (missing stat → missing score, O9); `value_scores` = fit percentile minus salary percentile among players with both (D10). Both labelled `Estimate`. Takes the percentile table from step 4a; not yet wired into the app |
 | Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
 | Streamlit app | `app.py` | ✅ Skeleton only: mock warning and two tables |
 | Tests | `tests/` | ✅ 71 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
@@ -57,7 +59,7 @@ flowchart TD
   LOAD["nbavalue/mock_data.py<br/>column + label checks"]
   PREP["nbavalue/prepare.py<br/>field checks, labels"]
   TABLE[("data/processed/players.csv<br/>git-ignored")]
-  ROLES["config/roles.yaml<br/>role recipes (O3, O6)"]
+  ROLES["config/roles.toml<br/>role recipes (O3)"]
   ANA["nbavalue analysis<br/>per-100, percentiles, fit, value"]
   APP["app.py (Streamlit, local)"]
 
@@ -73,7 +75,8 @@ flowchart TD
   classDef planned fill:#fff,stroke:#888,stroke-dasharray:5 5,color:#000
   class MOCK,LOAD,APP,FS,PREP,SALM built
   class NBA,RAW,TABLE,SAL,STAB built
-  class ROLES,ANA planned
+  class ROLES built
+  class ANA planned
 ```
 
 Today the app reads mock data directly through `mock_data.py`. Because mock players share the real table's columns (D17), the step 4 analysis functions take either table unchanged.
@@ -84,8 +87,7 @@ Today the app reads mock data directly through `mock_data.py`. Because mock play
 | --- | --- | --- |
 | `scrape_salaries` | Optional. Writes the same CSV format, only after the site's terms and robots.txt are checked (O1). | Later |
 | `data/processed/players.csv` | One row per player, rebuilt from raw files. Git-ignored. | 2–3 |
-| `config/roles.yaml` | Six role recipes (stats and weights), editable without code changes. | 4 |
-| Analysis library | Pure functions: per-100 stats, league percentiles with a minimum-minutes cut, role fit (0–100), value score. Most heavily tested part. | 4 |
+| Analysis library | Pure functions: per-100 stats, league percentiles with a minimum-minutes cut (step 4a). Role fit and value score are built in `nbavalue/roles.py` (step 4b). Most heavily tested part. | 4 |
 | App screens | Shortlist, value chart, comparison, method page. Credits NBA.com on every screen with real stats. | 5–6 |
 
 ## Deliberately left out
