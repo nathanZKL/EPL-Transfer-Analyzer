@@ -42,6 +42,7 @@ def main(
             hint = f" Did you mean: {row.suggestions}?" if row.suggestions else ""
             print(f"  {row.player_name} ({row.team}): {row.reason}.{hint}")
         print(f"Fix a row by adding it to {overrides_path} with the right player_id.")
+        print("NBA.com only lists players with a 2025-26 game, so injured players stay unmatched.")
     without_salary = len(players) - len(matched)
     print(f"{without_salary} NBA.com players have no salary; they stay missing, never guessed.")
     print(f"Wrote {processed_path}. Never commit data/salaries or data/processed.")

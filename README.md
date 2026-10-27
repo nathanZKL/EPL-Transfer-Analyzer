@@ -73,7 +73,7 @@ Salaries come from a CSV you make yourself, with a source on every row. Fetch th
    Example Player,BOS,2025-26,12500000,Site name,https://example.com/page,2026-10-24,Reported salary
    ```
 
-   `salary_usd` is whole dollars. `retrieved_on` is the date you read it (YYYY-MM-DD). Every row needs a source and link.
+   `salary_usd` is whole dollars, digits only: the import refuses `$`, commas and Excel's `1.25E+07` form, which loses digits. `retrieved_on` is the date you read it (YYYY-MM-DD). Every row needs a source and link.
 2. Run:
 
    ```bash
@@ -87,6 +87,10 @@ Salaries come from a CSV you make yourself, with a source on every row. Fetch th
    player_name,team,player_id,note
    Nic Example,BKN,1234567,listed as Nicolas on NBA.com
    ```
+
+   Write the name and team exactly as in your salary file. An override that fits no salary row stops the import, so a typo can't be silently ignored.
+
+   NBA.com's stats only list players who played at least one 2025-26 game. A player who missed the whole season (for example through injury) will always show as unmatched: leave him unmatched and don't add an override, because the suggestions are different players.
 
 Players without a salary are shown as missing, never guessed.
 

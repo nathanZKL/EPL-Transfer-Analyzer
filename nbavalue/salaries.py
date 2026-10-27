@@ -83,9 +83,11 @@ def validate_salaries(df: pd.DataFrame, name: str = "salary file") -> pd.DataFra
     season = "MOCK" if is_mock else SEASON
     _refuse_rows(df, df["season"].astype(str) != season, name, f"season must be {season}")
 
-    salary = pd.to_numeric(df["salary_usd"], errors="coerce")
-    whole_positive = (salary > 0) & (salary % 1 == 0)
-    _refuse_rows(df, ~whole_positive, name, "salary_usd must be a whole number above 0")
+    # Digits only: Excel can save 55224526 as 5.52E+07, which would read back rounded.
+    digits = df["salary_usd"].astype(str).str.strip().str.fullmatch(r"\d+")
+    salary = pd.to_numeric(df["salary_usd"].where(digits), errors="coerce")
+    problem = "salary_usd must be a whole number above 0, digits only (no $, commas or 1.2E+07)"
+    _refuse_rows(df, ~(digits & (salary > 0)), name, problem)
     df["salary_usd"] = salary.astype("int64")
 
     if not is_mock:
@@ -147,12 +149,13 @@ def match_salaries(
     for player in players.itertuples():
         by_name.setdefault(normalise_name(player.player_name), []).append(player)
 
-    matched, unmatched = [], []
+    matched, unmatched, used = [], [], set()
     for row in salaries.to_dict("records"):
         name_key, team = _key(row["player_name"], row["team"])
         candidates = by_name.get(name_key, [])
         same_team = [p for p in candidates if p.team.upper() == team]
         if (name_key, team) in forced:
+            used.add((name_key, team))
             matched.append({**row, "player_id": forced[name_key, team], "matched_by": "override"})
         elif len(candidates) == 1:
             matched.append({**row, "player_id": candidates[0].player_id, "matched_by": "name"})
@@ -165,11 +168,26 @@ def match_salaries(
                 reason = "several NBA.com players share this name; add an override"
                 close = [name_key]
             else:
-                reason = "no NBA.com player with this name (maybe no 2025-26 stats)"
+                reason = (
+                    "no NBA.com player with this name: check the spelling, or the player "
+                    "played no 2025-26 games (then leave it unmatched, never override)"
+                )
                 close = difflib.get_close_matches(name_key, list(by_name), n=3, cutoff=0.6)
             options = [p for key in close for p in by_name[key]][:3]
             suggestions = "; ".join(f"{p.player_name} ({p.team}, {p.player_id})" for p in options)
             unmatched.append({**row, "reason": reason, "suggestions": suggestions})
+
+    # An override that fits no salary row is almost always a typo or a different team code.
+    unused = [
+        f"{row.player_name} ({row.team})"
+        for row in overrides.itertuples()
+        if _key(row.player_name, row.team) not in used
+    ]
+    if unused:
+        raise ValueError(
+            "Overrides that match no salary row (the name and team must be written as in the "
+            f"salary file): {', '.join(unused)}"
+        )
 
     matched = pd.DataFrame(matched, columns=MATCHED_COLUMNS)
     twice = matched["player_id"].duplicated(keep=False)
