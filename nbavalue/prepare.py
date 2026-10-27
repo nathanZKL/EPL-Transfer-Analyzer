@@ -51,8 +51,8 @@ ADVANCED_COLUMNS = {
 
 # Tables added in step 4a. Only counting stats are kept, so a traded player's rows (one per
 # team) can be added up; rates are worked out later from the totals (nbavalue/analysis.py).
-# Hustle and rim-defence names come from nba_api's published schema. Pull-up and play-type
-# player columns aren't in it: unconfirmed until the first real fetch (decisions O5).
+# All names confirmed by Nathan's fetch on 2026-10-26 (D28). For shots within 6 ft NBA.com
+# sends FGM_LT_06/FGA_LT_06, not the D_FGM/D_FGA that nba_api's schema lists.
 EXTRA_COLUMNS = {
     "hustle": {
         "PLAYER_ID": "player_id",
@@ -60,7 +60,11 @@ EXTRA_COLUMNS = {
         "CONTESTED_SHOTS": "contested_shots",
         "SCREEN_ASSISTS": "screen_assists",
     },
-    "rim_defense": {"CLOSE_DEF_PERSON_ID": "player_id", "D_FGM": "rim_dfgm", "D_FGA": "rim_dfga"},
+    "rim_defense": {
+        "CLOSE_DEF_PERSON_ID": "player_id",
+        "FGM_LT_06": "rim_dfgm",
+        "FGA_LT_06": "rim_dfga",
+    },
     "pullup": {"PLAYER_ID": "player_id", "PULL_UP_FGM": "pullup_fgm", "PULL_UP_FGA": "pullup_fga"},
     "pnr_ball_handler": {"PLAYER_ID": "player_id", "POSS": "pnr_bh_poss", "PTS": "pnr_bh_pts"},
     "isolation": {"PLAYER_ID": "player_id", "POSS": "iso_poss", "PTS": "iso_pts"},

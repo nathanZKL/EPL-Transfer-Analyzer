@@ -7,7 +7,7 @@ A current snapshot for picking up work. Overwrite it at meaningful stopping poin
 ## Current objective
 
 MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#build-steps)).
-- **4a** (branch `step-4a-stats`, PR open): 7 more NBA.com tables, per-100 stats and league percentiles in `nbavalue/analysis.py`. Waiting on Nathan's `python -m nbavalue.update_data --refresh` to confirm the new field names (O5), then merge.
+- **4a** (branch `step-4a-stats`, PR open): 7 more NBA.com tables, per-100 stats and league percentiles in `nbavalue/analysis.py`. Real fetch done and field names confirmed (D28); ready for Nathan to merge.
 - **4b** (branch `step-4b-roles`, built and committed locally in a worktree, not pushed): `config/roles.toml`, `nbavalue/roles.py` with fit and value scores. Rebase onto main after 4a merges, then open its PR.
 
 ## Done
@@ -19,11 +19,15 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
   - `prepare.EXTRA_COLUMNS` keeps counting stats only, adds up a traded player's rows, and left-joins onto the base table so omitted players stay missing. An extra table listing a player base.csv lacks stops the build.
   - `analysis.py`: `add_rates`, `qualifying`, `percentiles` (returns `player_id` + `<stat>_pctile` for the 20 stats in `analysis.STATS`; the contract 4b consumes).
   - Mock players gained the 15 new columns (fictional values).
+- Real fetch, 2026-10-26 (9 tables, 582 players, 378 with 500+ minutes). Findings:
+  - Hustle, rim defence and pull-ups list each player once. Play types list traded players once per team (PnR ball handler 28, isolation 17, roll man 3), added up as designed.
+  - Play-type tables only list players with **10+ possessions** of that type (minimum is exactly 10 in all four). So a missing play-type value means "fewer than 10", not "unknown".
+  - Missing among the 378 qualifying players: isolation 125, roll man 129, putbacks 93, PnR ball handler 90, 3P% 10 (no attempts), pull-up FG% 4.
+  - Small samples: under 25 attempts for isolation 72, roll man 107, putbacks 111, pull-ups 93 of the players with a value; rim defence 0 (min 32).
 
 ## Remaining
 
-- Nathan runs `update_data --refresh`. If a pull-up or play-type column name is wrong, the error lists what NBA.com sent; fix the mapping in `prepare.EXTRA_COLUMNS` (one line).
-- Then check, on real data: how many 500+ minute players are missing from each play-type table (feeds O9 in 4b), and whether hustle/rim-defence tables ever list a traded player twice.
+- Nathan decides O9 (missing stats in role scores) and the small-sample minimums, using the findings above.
 - Merge 4a, rebase 4b, reconcile docs (4b numbered its open question O9; 4b's architecture rows and test count will conflict with 4a's), open 4b's PR.
 - Steps 5–6 in the plan.
 
@@ -32,7 +36,6 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 - **No listed position** in real or mock data: NBA.com's league stats table doesn't return one.
 - Players with no 2025-26 games (e.g. Tyrese Haliburton) aren't in NBA.com's table, so their salaries stay unmatched (D22). Fix later via NBA.com's full player list ("Ideas for later").
 - Only 19 real salaries so far, so salary percentiles (4b) are rough until the salary file covers most of the league.
-- Nathan's current `data/processed/players.csv` predates 4a and lacks the new columns until he refreshes.
 - Step 5: load the real `players.csv` with normal NaN handling. `import_salaries` reads it with `keep_default_na=False`, which turns stat columns with blanks into text; fine for the import (id, name, team only) but `analysis.add_rates` would fail on it.
 - Efficiency stats (`iso_ppp`, `roll_man_ppp`, `putback_ppp`, `pullup_fg_pct`, `rim_dfg_pct`) are ranked even on 1–2 attempts. Nathan chose to decide a per-stat minimum after seeing real data (PR #5 review).
 - README opening pitch still says "trade analyzer" (D1); fix in step 6.
@@ -45,8 +48,8 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 | `pytest` | 71 passed |
 | `ruff check .` | All checks passed |
 | `ruff format --check .` | Clean |
-| Real fetch of the 7 new tables | Not run yet |
+| Real fetch (`update_data --refresh`, Nathan) | 9 tables, 582 players, all fields mapped |
 
 ## Next concrete task
 
-Nathan: `python -m nbavalue.update_data --refresh`, then paste the printed `*.csv columns:` lines for the new tables (and any error). Then merge 4a.
+Nathan merges PR #5 and answers O9 and the small-sample question. Then Claude rebases 4b and opens its PR.

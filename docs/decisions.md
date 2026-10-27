@@ -8,6 +8,7 @@ Source for the 2026-10-23 entries: the MVP plan agreed with Nathan that day ([mv
 
 | # | Decision | Why | Tradeoff |
 | --- | --- | --- | --- |
+| D28 | **All NBA.com field names are confirmed** by Nathan's fetch (2026-10-26, 9 tables, 582 players). Rim defence within 6 ft uses `FGM_LT_06`/`FGA_LT_06`, not nba_api's listed `D_FGM`/`D_FGA`. Resolves O5. | Real data beats the published schema. | None. |
 | D27 | **Role weights start as Claude's best guesses** and are tuned once real rankings exist. (2026-10-26, answers part of O3) | Gets the scores working without blocking on basketball judgement calls. | First rankings may look odd until tuned. |
 | D26 | **Role recipes live in `config/roles.toml`, read with Python's built-in `tomllib`.** Resolves O6. (2026-10-26) | No new dependency; same editing experience as YAML. | TOML is slightly less familiar than YAML. |
 | D25 | **Players need 500+ minutes to get percentiles** (`analysis.MIN_MINUTES`). Resolves O4. (2026-10-26) | Small samples make rates jump around. | Short-season or late-signed players aren't ranked. |
@@ -42,4 +43,3 @@ Source for the 2026-10-23 entries: the MVP plan agreed with Nathan that day ([mv
 | --- | --- | --- | --- | --- |
 | O1 | **Which salary site, if any, to scrape:** Spotrac or HoopsHype. | Fallback is a hand-built CSV. Nathan is checking terms and robots.txt. | Step 3 scraper (not the CSV import) | Nathan |
 | O3 | **Role weights: final values.** | Starting guesses agreed (D27) in `config/roles.toml`; tuned once real rankings exist. | Step 4b tuning | Nathan |
-| O5 | **NBA.com field names for the hustle, tracking and play-type stats the roles need.** | Base and advanced confirmed by Nathan's first fetch (2026-10-24, 582 players). Step 4a maps hustle and rim defence from nba_api's published schema; pull-up (`PULL_UP_FGM`, `PULL_UP_FGA`) and play-type (`PLAYER_ID`, `POSS`, `PTS`) player columns are guesses. | Step 4a merge | Confirmed by Nathan's `update_data --refresh` |
