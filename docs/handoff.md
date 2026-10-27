@@ -13,7 +13,7 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 ## Done
 
 - Steps 1–3 merged (PRs #1–#4). Step 3: salary import with name matching and overrides (D18–D23). Nathan's first real import (2026-10-26): 19 of 20 rows matched; Tyrese Haliburton unmatched as expected (no 2025-26 games, D22).
-- Decisions agreed 2026-10-26/27: D29 missing stats in role scores, D30 minimum attempts; step split and "Done when" confirmed (D24), 500-minute cut (D25), `config/roles.toml` with `tomllib` (D26), starting weights are Claude's guesses (D27).
+- Decisions agreed 2026-10-26/27: D29 missing stats in role scores, D30 minimum attempts, D31 150 threes for 3P%; step split and "Done when" confirmed (D24), 500-minute cut (D25), `config/roles.toml` with `tomllib` (D26), starting weights are Claude's guesses (D27).
 - Step 4a code:
   - `fetch.TABLES` has 9 tables; each names its endpoint (`players`, `hustle`, `defense`, `tracking`, `play_type`). An old 2-table snapshot counts as incomplete, so the next run downloads all 9.
   - `prepare.EXTRA_COLUMNS` keeps counting stats only, adds up a traded player's rows, and left-joins onto the base table so omitted players stay missing. An extra table listing a player base.csv lacks stops the build.
@@ -28,7 +28,6 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 ## Remaining
 
 - Merge PR #5, then 4b's PR.
-- Open question for Nathan: a minimum for 3-point % (`fg3_pct`, used by 3-and-D wing). Nathan proposed 200 attempts; Claude suggested 100. Real data (378 qualifying): 300 keep a percentile at 100, 191 at 200; 37 of the 100 most 3-heavy shooters have under 200.
 - Step 5: show the 3 salaried players under 500 minutes as "not ranked", not hidden (PR #6 review).
 - Steps 5–6 in the plan.
 
@@ -45,11 +44,11 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 
 | Check | Result |
 | --- | --- |
-| `pytest` | 106 passed (branch `step-4b-roles`) |
+| `pytest` | 107 passed (branch `step-4b-roles`) |
 | `ruff check .` | All checks passed |
 | `ruff format --check .` | Clean |
 | Real fetch (`update_data --refresh`, Nathan) | 9 tables, 582 players, all fields mapped |
 
 ## Next concrete task
 
-Nathan merges PR #5, then reviews and merges the 4b PR, and answers the 3-point % minimum question. Then step 5 (app screens).
+Nathan merges PR #5, then reviews and merges the 4b PR. Then step 5 (app screens).

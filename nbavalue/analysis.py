@@ -74,6 +74,7 @@ MIN_ATTEMPTS = {
     "roll_man_ppp": ("roll_man_poss", 25),
     "putback_ppp": ("putback_poss", 25),
     "pullup_fg_pct": ("pullup_fga", 50),
+    "fg3_pct": ("fg3a", 150),  # D31
 }
 
 

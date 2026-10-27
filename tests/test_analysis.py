@@ -114,13 +114,24 @@ def test_efficiency_on_too_few_attempts_gets_no_percentile():
     assert list(ranked["pullup_fg_pct_pctile"][1:]) == [50.0, 100.0]
 
 
-def test_minimum_attempts_are_25_plays_and_50_pullups():
+def test_minimum_attempts_are_25_plays_50_pullups_and_150_threes():
     assert analysis.MIN_ATTEMPTS == {
         "iso_ppp": ("iso_poss", 25),
         "roll_man_ppp": ("roll_man_poss", 25),
         "putback_ppp": ("putback_poss", 25),
         "pullup_fg_pct": ("pullup_fga", 50),
+        "fg3_pct": ("fg3a", 150),
     }
+
+
+def test_three_point_percentage_needs_150_attempts():
+    # 2-for-3 would top the league; under 150 attempts it isn't ranked.
+    df = players(fg3m=[2, 50, 60], fg3a=[3, 150, 160])
+
+    ranked = analysis.percentiles(df)
+
+    assert pd.isna(ranked.loc[0, "fg3_pct_pctile"])
+    assert list(ranked["fg3_pct_pctile"][1:]) == [50.0, 100.0]
 
 
 def test_play_type_volume_blank_ranks_tied_for_last():
