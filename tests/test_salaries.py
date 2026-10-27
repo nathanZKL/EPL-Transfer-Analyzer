@@ -125,6 +125,12 @@ def test_override_with_an_unknown_player_id_is_refused():
         match(salary_rows(("Mock Kai Bell", "SPS")), overrides(("Mock Kai Bell", "SPS", 99)))
 
 
+def test_override_that_matches_no_salary_row_is_refused():
+    # The salary file says GS, the override says GSW: the override would silently do nothing.
+    with pytest.raises(ValueError, match=r"match no salary row.*: Mock Kai Bell \(GSW\)"):
+        match(salary_rows(("Mock Kai Bell", "GS")), overrides(("Mock Kai Bell", "GSW", 3)))
+
+
 def test_two_salaries_for_one_player_are_refused():
     with pytest.raises(ValueError, match="same player: Mock Zoe Ruiz, Mock Zoë Ruiz Jr."):
         match(salary_rows(("Mock Zoë Ruiz Jr.", "MVM"), ("Mock Zoe Ruiz", "FTF")))
@@ -144,6 +150,9 @@ def test_mock_salaries_are_not_matched_against_real_players():
         ({"salary_usd": "12.5"}, "salary_usd must be a whole number above 0"),
         ({"salary_usd": "0"}, "salary_usd must be a whole number above 0"),
         ({"salary_usd": ""}, "salary_usd must be a whole number above 0"),
+        ({"salary_usd": "5.52E+07"}, "salary_usd must be a whole number above 0"),
+        ({"salary_usd": "12,500,000"}, "salary_usd must be a whole number above 0"),
+        ({"salary_usd": "12500000.0"}, "salary_usd must be a whole number above 0"),
         ({"season": "2024-25"}, "season must be 2025-26"),
         ({"team": ""}, "team is blank"),
         ({"data_label": "Estimate"}, "data_label must be 'Reported salary' or 'Mock'"),

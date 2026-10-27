@@ -16,6 +16,9 @@ data/salaries/
 .env
 .streamlit/secrets.toml
 
+# Local code-review reports
+.claude/reviews/
+
 # OS / editor
 .DS_Store
 .idea/

@@ -67,7 +67,7 @@ Six small pull requests, each reviewable and testable on its own.
 
 1. **Skeleton** – project layout, dependencies, lint and test setup, mock dataset and mock salary file, README. ✅ done (PR #1, merged 2026-10-23)
 2. **NBA.com data** – cached, rate-limited fetch for 2025-26, field checks, clean player table. Nathan runs the first real fetch. ✅ done (PR #2, 2026-10-24). Hustle, tracking and play-type tables are deferred to step 4.
-3. **Salary import** – CSV format, validation, matching salaries to players. ✅ built (PR pending, 2026-10-24): `python -m nbavalue.import_salaries` (D18–D21). The optional scraper waits on O1.
+3. **Salary import** – CSV format, validation, matching salaries to players. ✅ done (PR #3, 2026-10-25; review fixes D22–D23 in a follow-up PR): `python -m nbavalue.import_salaries` (D18–D23). The optional scraper waits on O1.
 4. **Analysis** – per-100 stats, percentiles, role fit scores and value score, tested on mock data.
 5. **App** – shortlist, value chart and comparison screens.
 6. **Method page and README polish** – method and limits, NBA.com attribution, mock-data screenshots.
@@ -89,4 +89,5 @@ Not in the MVP. New ideas go here, not into the build steps, unless Nathan agree
 | Age curves and multi-season trends | Several NBA.com seasons | Available; mind the rate limits |
 | Trade checker (salary matching, aprons) | CBA cap rules plus team payrolls | Rules public but complex; payroll data has the salary terms question |
 | Injury status | NBA official injury reports | Published as reports, not clean data |
+| Salaried players with no 2025-26 games (D22): give them an ID and a "no stats" label | NBA.com's full player list (one extra request) | Not fetched yet |
 | Hosted public website | Written permission from the NBA | Barred by NBA.com terms without consent |
