@@ -88,8 +88,11 @@ def _select(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFra
 
 
 def clean_extra_table(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFrame:
-    """Keep the mapped counting stats and add up a traded player's rows into one."""
-    return _select(raw, mapping, name).groupby("player_id", as_index=False).sum()
+    """Keep the mapped counting stats and add up a traded player's rows into one.
+
+    min_count=1: a value no row has stays missing instead of becoming 0.
+    """
+    return _select(raw, mapping, name).groupby("player_id", as_index=False).sum(min_count=1)
 
 
 def clean_table(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFrame:
@@ -121,7 +124,7 @@ def build_player_table(snapshot: Path) -> pd.DataFrame:
         extra = clean_extra_table(pd.read_csv(snapshot / f"{table}.csv"), mapping, f"{table}.csv")
         unknown = set(extra["player_id"]) - base_ids
         if unknown:
-            raise ValueError(f"{table}.csv lists {len(unknown)} players that base.csv doesn't")
+            raise ValueError(f"{table}.csv lists players that base.csv doesn't: {len(unknown)}")
         players = players.merge(extra, on="player_id", how="left", validate="one_to_one")
 
     players["season"] = SEASON

@@ -65,6 +65,19 @@ def test_traded_player_rows_are_added_up(snapshot):
     assert players.loc[900102, "iso_poss"] == 1
 
 
+def test_blank_values_stay_missing_when_rows_are_added_up(snapshot):
+    # A blank cell must never turn into a 0 (CLAUDE.md rule 1).
+    iso = fake_table(ISOLATION).astype({"POSS": float, "PTS": float})
+    iso.loc[0, ["POSS", "PTS"]] = None
+    pd.concat([iso, iso.head(1)]).to_csv(snapshot / "isolation.csv", index=False)
+
+    players = prepare.build_player_table(snapshot).set_index("player_id")
+
+    assert pd.isna(players.loc[900101, "iso_poss"])
+    assert pd.isna(players.loc[900101, "iso_pts"])
+    assert players.loc[900102, "iso_poss"] == 1
+
+
 def test_player_missing_from_an_extra_table_stays_missing(snapshot):
     fake_table(ISOLATION).tail(1).to_csv(snapshot / "isolation.csv", index=False)
 
@@ -82,7 +95,7 @@ def test_extra_table_with_an_unknown_player_is_refused(snapshot):
         snapshot / "isolation.csv", index=False
     )
 
-    with pytest.raises(ValueError, match="isolation.csv lists 1 players that base.csv doesn't"):
+    with pytest.raises(ValueError, match="isolation.csv lists players that base.csv doesn't: 1"):
         prepare.build_player_table(snapshot)
 
 

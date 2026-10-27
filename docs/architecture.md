@@ -19,7 +19,7 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | Salary command | `nbavalue/import_salaries.py` | ✅ Built: `python -m nbavalue.import_salaries` writes `data/processed/salaries.csv` and `salary_unmatched.csv`. Not yet run on real salaries |
 | Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
 | Streamlit app | `app.py` | ✅ Skeleton only: mock warning and two tables |
-| Tests | `tests/` | ✅ 70 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
+| Tests | `tests/` | ✅ 71 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
 | Everything else in the diagram | — | Planned |
 
 ## Technology stack

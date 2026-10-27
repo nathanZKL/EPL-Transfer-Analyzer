@@ -32,8 +32,9 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 - **No listed position** in real or mock data: NBA.com's league stats table doesn't return one.
 - Players with no 2025-26 games (e.g. Tyrese Haliburton) aren't in NBA.com's table, so their salaries stay unmatched (D22). Fix later via NBA.com's full player list ("Ideas for later").
 - Only 19 real salaries so far, so salary percentiles (4b) are rough until the salary file covers most of the league.
-- Efficiency stats on tiny samples (e.g. a few isolations) can rank very high or low; a minimum-possessions rule is likely needed in 4b.
 - Nathan's current `data/processed/players.csv` predates 4a and lacks the new columns until he refreshes.
+- Step 5: load the real `players.csv` with normal NaN handling. `import_salaries` reads it with `keep_default_na=False`, which turns stat columns with blanks into text; fine for the import (id, name, team only) but `analysis.add_rates` would fail on it.
+- Efficiency stats (`iso_ppp`, `roll_man_ppp`, `putback_ppp`, `pullup_fg_pct`, `rim_dfg_pct`) are ranked even on 1–2 attempts. Nathan chose to decide a per-stat minimum after seeing real data (PR #5 review).
 - README opening pitch still says "trade analyzer" (D1); fix in step 6.
 - Low-priority review notes (not fixed): duplicate override keys silently use the last one; `load_overrides` checks have no tests; duplicate salary rows that are both unmatched aren't flagged.
 
@@ -41,7 +42,7 @@ MVP **step 4: analysis**, split into two PRs (D24; [mvp-plan.md](mvp-plan.md#bui
 
 | Check | Result |
 | --- | --- |
-| `pytest` | 70 passed |
+| `pytest` | 71 passed |
 | `ruff check .` | All checks passed |
 | `ruff format --check .` | Clean |
 | Real fetch of the 7 new tables | Not run yet |
