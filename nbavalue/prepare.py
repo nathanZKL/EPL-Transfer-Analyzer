@@ -83,6 +83,23 @@ PLAYER_COLUMNS = [
 ]
 
 
+# NBA.com only lists players with at least this many possessions of a play type. The
+# analysis ranks a blank as "fewer than 10" (D29), so every build re-checks the floor.
+PLAY_TYPE_TABLES = {"pnr_ball_handler", "isolation", "roll_man", "putbacks"}
+LISTING_FLOOR = 10
+
+
+def check_listing_floor(raw: pd.DataFrame, name: str) -> None:
+    """Stop if a play-type table lists a blank or fewer than LISTING_FLOOR possessions."""
+    poss = pd.to_numeric(raw["POSS"], errors="coerce") if "POSS" in raw else None
+    if poss is not None and (poss.isna() | (poss < LISTING_FLOOR)).any():
+        raise ValueError(
+            f"{name} lists a player with a blank or under {LISTING_FLOOR} possessions. "
+            "NBA.com's listing rule may have changed, so blanks can no longer be read as "
+            "'fewer than 10' (decision D29). Check the data before continuing."
+        )
+
+
 def _select(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFrame:
     try:
         require_columns(raw, list(mapping), name)
@@ -125,7 +142,10 @@ def build_player_table(snapshot: Path) -> pd.DataFrame:
     # The extra tables leave out players with no plays of that kind. Those values stay
     # missing (never 0): the base table is the list of players.
     for table, mapping in EXTRA_COLUMNS.items():
-        extra = clean_extra_table(pd.read_csv(snapshot / f"{table}.csv"), mapping, f"{table}.csv")
+        raw = pd.read_csv(snapshot / f"{table}.csv")
+        if table in PLAY_TYPE_TABLES:
+            check_listing_floor(raw, f"{table}.csv")
+        extra = clean_extra_table(raw, mapping, f"{table}.csv")
         unknown = set(extra["player_id"]) - base_ids
         if unknown:
             raise ValueError(f"{table}.csv lists players that base.csv doesn't: {len(unknown)}")

@@ -55,27 +55,28 @@ def test_tables_with_different_players_are_refused(snapshot):
 def test_traded_player_rows_are_added_up(snapshot):
     # Play-type tables list a traded player once per team.
     iso = fake_table(ISOLATION)
-    second_team = iso.head(1).assign(POSS=4, PTS=6)
+    second_team = iso.head(1).assign(POSS=12, PTS=6)
     pd.concat([iso, second_team]).to_csv(snapshot / "isolation.csv", index=False)
 
     players = prepare.build_player_table(snapshot).set_index("player_id")
 
-    assert players.loc[900101, "iso_poss"] == 1 + 4
+    assert players.loc[900101, "iso_poss"] == 10 + 12
     assert players.loc[900101, "iso_pts"] == 1 + 6
-    assert players.loc[900102, "iso_poss"] == 1
+    assert players.loc[900102, "iso_poss"] == 10
 
 
 def test_blank_values_stay_missing_when_rows_are_added_up(snapshot):
-    # A blank cell must never turn into a 0 (CLAUDE.md rule 1).
-    iso = fake_table(ISOLATION).astype({"POSS": float, "PTS": float})
-    iso.loc[0, ["POSS", "PTS"]] = None
-    pd.concat([iso, iso.head(1)]).to_csv(snapshot / "isolation.csv", index=False)
+    # A blank cell must never turn into a 0 (CLAUDE.md rule 1). Hustle is used because a
+    # blank in a play-type table stops the build instead (D29 listing floor).
+    hustle = fake_table(fetch.TABLES["hustle"]).astype({"DEFLECTIONS": float})
+    hustle.loc[0, "DEFLECTIONS"] = None
+    pd.concat([hustle, hustle.head(1)]).to_csv(snapshot / "hustle.csv", index=False)
 
     players = prepare.build_player_table(snapshot).set_index("player_id")
 
-    assert pd.isna(players.loc[900101, "iso_poss"])
-    assert pd.isna(players.loc[900101, "iso_pts"])
-    assert players.loc[900102, "iso_poss"] == 1
+    assert pd.isna(players.loc[900101, "deflections"])
+    assert players.loc[900101, "contested_shots"] == 1 + 1
+    assert players.loc[900102, "deflections"] == 1
 
 
 def test_player_missing_from_an_extra_table_stays_missing(snapshot):
@@ -85,7 +86,7 @@ def test_player_missing_from_an_extra_table_stays_missing(snapshot):
 
     assert pd.isna(players.loc[900101, "iso_poss"])
     assert pd.isna(players.loc[900101, "iso_pts"])
-    assert players.loc[900102, "iso_poss"] == 1
+    assert players.loc[900102, "iso_poss"] == 10
     assert len(players) == 2
 
 
@@ -96,6 +97,17 @@ def test_extra_table_with_an_unknown_player_is_refused(snapshot):
     )
 
     with pytest.raises(ValueError, match="isolation.csv lists players that base.csv doesn't: 1"):
+        prepare.build_player_table(snapshot)
+
+
+@pytest.mark.parametrize("poss", [9, None])
+def test_play_type_table_under_the_listing_floor_is_refused(snapshot, poss):
+    # Blanks are ranked as "fewer than 10" (D29); that only holds while NBA.com's floor does.
+    iso = fake_table(ISOLATION).assign(POSS=20.0)
+    iso.loc[0, "POSS"] = poss
+    iso.to_csv(snapshot / "isolation.csv", index=False)
+
+    with pytest.raises(ValueError, match="isolation.csv lists a player with a blank or under 10"):
         prepare.build_player_table(snapshot)
 
 

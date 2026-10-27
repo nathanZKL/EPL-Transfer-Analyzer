@@ -63,6 +63,20 @@ STATS = [
 # Opponents shooting worse near a defender is good, so this percentile is flipped.
 LOWER_IS_BETTER = {"rim_dfg_pct"}
 
+# NBA.com's play-type tables only list players with 10+ possessions of that type
+# (`prepare.check_listing_floor` re-checks this on every build), so a blank here means
+# "fewer than 10", not "unknown". These blanks rank tied for last instead of left out (D29).
+BLANK_MEANS_FEWER_THAN_10 = {"pnr_bh_poss_per100", "iso_poss_per100"}
+
+# Efficiency on fewer attempts than this gets no percentile (D30): stat -> (attempts, minimum).
+MIN_ATTEMPTS = {
+    "iso_ppp": ("iso_poss", 25),
+    "roll_man_ppp": ("roll_man_poss", 25),
+    "putback_ppp": ("putback_poss", 25),
+    "pullup_fg_pct": ("pullup_fga", 50),
+    "fg3_pct": ("fg3a", 150),  # D31
+}
+
 
 def _divide(top: pd.Series, bottom: pd.Series) -> pd.Series:
     """top / bottom, missing (not infinite) when bottom is 0 or either side is missing."""
@@ -92,12 +106,20 @@ def percentiles(players: pd.DataFrame, min_minutes: float = MIN_MINUTES) -> pd.D
     """League percentiles (0-100, higher is always better) for every stat in STATS.
 
     Only players with at least `min_minutes` are ranked, against each other. Returns
-    `player_id` plus one `<stat>_pctile` column per stat; a missing stat stays missing.
+    `player_id` plus one `<stat>_pctile` column per stat. A missing stat, or efficiency on
+    fewer than MIN_ATTEMPTS, gets no percentile; play-type volume blanks rank tied for last.
     """
     ranked = qualifying(add_rates(players), min_minutes)
     require_columns(ranked, ["player_id", *STATS], "player table")
     out = ranked[["player_id"]].reset_index(drop=True)
     for stat in STATS:
-        values = ranked[stat].reset_index(drop=True)
-        out[f"{stat}_pctile"] = values.rank(pct=True, ascending=stat not in LOWER_IS_BETTER) * 100
+        values = ranked[stat]
+        if stat in MIN_ATTEMPTS:
+            attempts, minimum = MIN_ATTEMPTS[stat]
+            values = values.where(ranked[attempts] >= minimum)
+        blanks = "top" if stat in BLANK_MEANS_FEWER_THAN_10 else "keep"  # "top" = lowest ranks
+        rank = values.reset_index(drop=True).rank(
+            pct=True, ascending=stat not in LOWER_IS_BETTER, na_option=blanks
+        )
+        out[f"{stat}_pctile"] = rank * 100
     return out

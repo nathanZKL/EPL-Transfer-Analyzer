@@ -115,6 +115,8 @@ nbavalue/            Python code the app uses
   salaries.py        Checks the salary CSV and matches it to players
   import_salaries.py The command that imports salaries
   analysis.py        Per-100 stats and league percentiles
+  roles.py           Role fit scores and value scores (our estimates)
+config/roles.toml    The six roles: which stats count, and how much
 data/mock/           Fictional data, committed to the repo
 tests/               Automated checks
 docs/                Plan, architecture, decisions, handoff

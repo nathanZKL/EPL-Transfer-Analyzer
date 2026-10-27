@@ -91,6 +91,7 @@ Not in the MVP. New ideas go here, not into the build steps, unless Nathan agree
 | Age curves and multi-season trends | Several NBA.com seasons | Available; mind the rate limits |
 | Trade checker (salary matching, aprons) | CBA cap rules plus team payrolls | Rules public but complex; payroll data has the salary terms question |
 | Injury status | NBA official injury reports | Published as reports, not clean data |
+| Adjustable ranking filters: let the user change the 500-minute cut (D25) and the attempt minimums (D30) in the app, with the defaults shown | Nothing new: same data, recalculated | Ready; the thresholds are already single settings in `nbavalue/analysis.py` |
 | Injury-prone flag: mark players who missed many games over recent seasons, labelled `Estimate` | Games played per season from NBA.com (several seasons); reasons for absences from injury reports | Games played: available, mind the rate limits. Reasons: not clean data, so a flag can't tell injury from rest, suspension or coach's decision |
 | Salaried players with no 2025-26 games (D22): give them an ID and a "no stats" label | NBA.com's full player list (one extra request) | Not fetched yet |
 | Hosted public website | Written permission from the NBA | Barred by NBA.com terms without consent |
