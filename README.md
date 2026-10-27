@@ -1,7 +1,7 @@
 # NBA-Player-Value-Analyzer
 An NBA trade analyzer that evaluates potential trades and player acquisitions using player performance, team needs, roster fit, and contract value to help identify moves that make sense for each team.
 
-> **Status: step 3 of 6.** The app still shows **mock data only**: fictional players, teams and salaries. Commands to fetch real NBA.com stats and import salaries exist, but the app doesn't read their output yet.
+> **Status: step 4 of 6 (analysis) in progress.** The app still shows **mock data only**: fictional players, teams and salaries. Commands to fetch real NBA.com stats and import salaries exist, but the app doesn't read their output yet.
 
 ## What the first version (MVP) will do
 
@@ -60,7 +60,7 @@ Your browser opens at http://localhost:8501. You should see a yellow **MOCK DATA
 python -m nbavalue.update_data
 ```
 
-This downloads 2025-26 player stats from NBA.com into `data/raw/2025-26/<date>/` (two requests, a few seconds apart) and builds `data/processed/players.csv`. Running it again reuses the saved files; add `--refresh` to download again. Both folders are git-ignored: NBA.com's terms allow personal use but not republishing. The app doesn't read this file yet.
+This downloads 2025-26 player stats from NBA.com into `data/raw/2025-26/<date>/` (nine requests, a few seconds apart: box score, advanced, hustle, rim defence, pull-ups and four play types) and builds `data/processed/players.csv`. Running it again reuses the saved files; add `--refresh` to download again. Both folders are git-ignored: NBA.com's terms allow personal use but not republishing. The app doesn't read this file yet.
 
 ## Import salaries (optional, your own machine only)
 
@@ -114,6 +114,7 @@ nbavalue/            Python code the app uses
   update_data.py     The command that runs fetch + prepare
   salaries.py        Checks the salary CSV and matches it to players
   import_salaries.py The command that imports salaries
+  analysis.py        Per-100 stats and league percentiles
 data/mock/           Fictional data, committed to the repo
 tests/               Automated checks
 docs/                Plan, architecture, decisions, handoff

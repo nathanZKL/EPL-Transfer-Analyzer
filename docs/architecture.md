@@ -11,14 +11,15 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | Data labels | `nbavalue/labels.py` | ✅ Built |
 | Shared column check | `nbavalue/checks.py` | ✅ Built (`require_columns`) |
 | Mock data loader + validation | `nbavalue/mock_data.py` | ✅ Built (raises `ValueError` on missing columns or non-`Mock` rows) |
-| NBA.com fetch | `nbavalue/fetch.py` | ✅ Built and run for real once: base + advanced tables, 3 s pause, snapshot reuse |
-| Prepare (field checks, mapping, labels) | `nbavalue/prepare.py` | ✅ Built: writes `data/processed/players.csv` with `NBA.com` label and `fetched_on` date |
+| NBA.com fetch | `nbavalue/fetch.py` | ✅ Built: 9 tables (base, advanced, hustle, rim defence, pull-ups, 4 play types), 3 s pause, snapshot reuse. All 9 run for real on 2026-10-26 (D28) |
+| Prepare (field checks, mapping, labels) | `nbavalue/prepare.py` | ✅ Built: writes `data/processed/players.csv` with `NBA.com` label and `fetched_on` date. Extra tables keep counting stats only, add up a traded player's rows, and leave players they omit as missing |
+| Per-100 stats and percentiles | `nbavalue/analysis.py` | ✅ Built (step 4a): per-100 stats and ratios from season totals; 0–100 league percentiles among players with 500+ minutes (D25); opponent rim FG% flipped; missing stays missing |
 | Command | `nbavalue/update_data.py` | ✅ Built: `python -m nbavalue.update_data [--refresh]` |
 | Salary check and match | `nbavalue/salaries.py` | ✅ Built: validates the salary CSV, matches by normalised name with team as tie-break and an override file (D18–D21); digits-only salaries and no unused overrides (D23); players with no 2025-26 games stay unmatched (D22) |
 | Salary command | `nbavalue/import_salaries.py` | ✅ Built: `python -m nbavalue.import_salaries` writes `data/processed/salaries.csv` and `salary_unmatched.csv`. Not yet run on real salaries |
 | Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
 | Streamlit app | `app.py` | ✅ Skeleton only: mock warning and two tables |
-| Tests | `tests/` | ✅ 50 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
+| Tests | `tests/` | ✅ 71 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
 | Everything else in the diagram | — | Planned |
 
 ## Technology stack
@@ -81,7 +82,6 @@ Today the app reads mock data directly through `mock_data.py`. Because mock play
 
 | Component | What it does | Step |
 | --- | --- | --- |
-| Hustle, tracking, play-type tables | More `fetch.TABLES` entries and mappings, added once real base/advanced output has been seen. | 2 follow-up or 4 |
 | `scrape_salaries` | Optional. Writes the same CSV format, only after the site's terms and robots.txt are checked (O1). | Later |
 | `data/processed/players.csv` | One row per player, rebuilt from raw files. Git-ignored. | 2–3 |
 | `config/roles.yaml` | Six role recipes (stats and weights), editable without code changes. | 4 |

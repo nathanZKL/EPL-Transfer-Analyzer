@@ -47,13 +47,13 @@ Exact NBA.com field names are confirmed in step 2 against a real fetch.
 
 ## Done when
 
-Written on 2026-10-24 from the agreed features above. **Proposed, awaiting Nathan's confirmation.** Every feature also needs passing `pytest`, `ruff check .` and `ruff format --check .`, and tests that run on mock data only.
+Written on 2026-10-24 from the agreed features above. **Confirmed by Nathan on 2026-10-26** (D24). Every feature also needs passing `pytest`, `ruff check .` and `ruff format --check .`, and tests that run on mock data only.
 
 | Feature | Done when |
 | --- | --- |
 | 1. Labelled data snapshot | One documented command fetches 2025-26 NBA.com stats into dated files in `data/raw/`, reusing the cache on a second run and pausing between requests. A salary CSV in the agreed format imports and validates, failing loudly on missing columns or sources. Every row carries a label (`NBA.com` + fetch date, `Reported salary` + source and date, or `Mock`). Nathan has run the first real fetch on his machine. |
 | 2. Per-100 stats and percentiles | Per-100-possession stats and league-wide percentiles are computed by tested functions. Players under the minimum-minutes cut are excluded from percentiles. Results on the mock dataset match hand-checked values. |
-| 3. Role fit scores | All six starter roles are defined in `config/roles.yaml`. Every qualifying player gets a 0–100 score for every role. Scores are labelled `Estimate`. Changing a weight in the config changes the ranking without code changes. |
+| 3. Role fit scores | All six starter roles are defined in `config/roles.toml`. Every qualifying player gets a 0–100 score for every role. Scores are labelled `Estimate`. Changing a weight in the config changes the ranking without code changes. |
 | 4. Value view | For a chosen role, the app plots fit against salary and ranks by fit percentile minus salary percentile. Players without a salary are shown as missing, not dropped or guessed. The value score is labelled as our estimate. |
 | 5. Shortlist, comparison, method page | The role and filters (exclude team, max salary, max age, min minutes) change the shortlist. Two or three players can be compared side by side. A method page explains the calculations and limits. Every screen with real stats credits NBA.com. |
 
@@ -68,7 +68,9 @@ Six small pull requests, each reviewable and testable on its own.
 1. **Skeleton** – project layout, dependencies, lint and test setup, mock dataset and mock salary file, README. ✅ done (PR #1, merged 2026-10-23)
 2. **NBA.com data** – cached, rate-limited fetch for 2025-26, field checks, clean player table. Nathan runs the first real fetch. ✅ done (PR #2, 2026-10-24). Hustle, tracking and play-type tables are deferred to step 4.
 3. **Salary import** – CSV format, validation, matching salaries to players. ✅ done (PR #3, 2026-10-25; review fixes D22–D23 in a follow-up PR): `python -m nbavalue.import_salaries` (D18–D23). The optional scraper waits on O1.
-4. **Analysis** – per-100 stats, percentiles, role fit scores and value score, tested on mock data.
+4. **Analysis** – split in two PRs (D24), tested on mock data:
+   - **4a** – hustle, rim-defence, pull-up and play-type tables (7 more NBA.com requests), per-100 stats and league percentiles for players with 500+ minutes (D25): `nbavalue/analysis.py`.
+   - **4b** – `config/roles.toml` (D26), role fit scores and value score.
 5. **App** – shortlist, value chart and comparison screens.
 6. **Method page and README polish** – method and limits, NBA.com attribution, mock-data screenshots.
 
@@ -89,5 +91,6 @@ Not in the MVP. New ideas go here, not into the build steps, unless Nathan agree
 | Age curves and multi-season trends | Several NBA.com seasons | Available; mind the rate limits |
 | Trade checker (salary matching, aprons) | CBA cap rules plus team payrolls | Rules public but complex; payroll data has the salary terms question |
 | Injury status | NBA official injury reports | Published as reports, not clean data |
+| Injury-prone flag: mark players who missed many games over recent seasons, labelled `Estimate` | Games played per season from NBA.com (several seasons); reasons for absences from injury reports | Games played: available, mind the rate limits. Reasons: not clean data, so a flag can't tell injury from rest, suspension or coach's decision |
 | Salaried players with no 2025-26 games (D22): give them an ID and a "no stats" label | NBA.com's full player list (one extra request) | Not fetched yet |
 | Hosted public website | Written permission from the NBA | Barred by NBA.com terms without consent |

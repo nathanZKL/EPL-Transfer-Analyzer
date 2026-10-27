@@ -49,9 +49,33 @@ ADVANCED_COLUMNS = {
     "DREB_PCT": "dreb_pct",
 }
 
+# Tables added in step 4a. Only counting stats are kept, so a traded player's rows (one per
+# team) can be added up; rates are worked out later from the totals (nbavalue/analysis.py).
+# All names confirmed by Nathan's fetch on 2026-10-26 (D28). For shots within 6 ft NBA.com
+# sends FGM_LT_06/FGA_LT_06, not the D_FGM/D_FGA that nba_api's schema lists.
+EXTRA_COLUMNS = {
+    "hustle": {
+        "PLAYER_ID": "player_id",
+        "DEFLECTIONS": "deflections",
+        "CONTESTED_SHOTS": "contested_shots",
+        "SCREEN_ASSISTS": "screen_assists",
+    },
+    "rim_defense": {
+        "CLOSE_DEF_PERSON_ID": "player_id",
+        "FGM_LT_06": "rim_dfgm",
+        "FGA_LT_06": "rim_dfga",
+    },
+    "pullup": {"PLAYER_ID": "player_id", "PULL_UP_FGM": "pullup_fgm", "PULL_UP_FGA": "pullup_fga"},
+    "pnr_ball_handler": {"PLAYER_ID": "player_id", "POSS": "pnr_bh_poss", "PTS": "pnr_bh_pts"},
+    "isolation": {"PLAYER_ID": "player_id", "POSS": "iso_poss", "PTS": "iso_pts"},
+    "roll_man": {"PLAYER_ID": "player_id", "POSS": "roll_man_poss", "PTS": "roll_man_pts"},
+    "putbacks": {"PLAYER_ID": "player_id", "POSS": "putback_poss", "PTS": "putback_pts"},
+}
+
 PLAYER_COLUMNS = [
     *BASE_COLUMNS.values(),
     *[col for col in ADVANCED_COLUMNS.values() if col != "player_id"],
+    *[col for mapping in EXTRA_COLUMNS.values() for col in mapping.values() if col != "player_id"],
     "season",
     "fetched_on",
     "source",
@@ -59,20 +83,32 @@ PLAYER_COLUMNS = [
 ]
 
 
-def clean_table(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFrame:
-    """Keep the mapped columns, rename them, and refuse duplicate players."""
+def _select(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFrame:
     try:
         require_columns(raw, list(mapping), name)
     except ValueError as err:
         raise ValueError(f"{err}. Columns NBA.com sent: {', '.join(raw.columns)}") from err
-    df = raw[list(mapping)].rename(columns=mapping)
+    return raw[list(mapping)].rename(columns=mapping)
+
+
+def clean_extra_table(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFrame:
+    """Keep the mapped counting stats and add up a traded player's rows into one.
+
+    min_count=1: a value no row has stays missing instead of becoming 0.
+    """
+    return _select(raw, mapping, name).groupby("player_id", as_index=False).sum(min_count=1)
+
+
+def clean_table(raw: pd.DataFrame, mapping: dict[str, str], name: str) -> pd.DataFrame:
+    """Keep the mapped columns, rename them, and refuse duplicate players."""
+    df = _select(raw, mapping, name)
     if not df["player_id"].is_unique:
         raise ValueError(f"{name} lists the same player more than once")
     return df
 
 
 def build_player_table(snapshot: Path) -> pd.DataFrame:
-    """Join the base and advanced tables of one snapshot and label every row."""
+    """Join every table of one snapshot into one labelled row per player."""
     base = clean_table(pd.read_csv(snapshot / "base.csv"), BASE_COLUMNS, "base.csv")
     advanced = clean_table(pd.read_csv(snapshot / "advanced.csv"), ADVANCED_COLUMNS, "advanced.csv")
 
@@ -85,6 +121,16 @@ def build_player_table(snapshot: Path) -> pd.DataFrame:
         )
 
     players = base.merge(advanced, on="player_id", validate="one_to_one")
+
+    # The extra tables leave out players with no plays of that kind. Those values stay
+    # missing (never 0): the base table is the list of players.
+    for table, mapping in EXTRA_COLUMNS.items():
+        extra = clean_extra_table(pd.read_csv(snapshot / f"{table}.csv"), mapping, f"{table}.csv")
+        unknown = set(extra["player_id"]) - base_ids
+        if unknown:
+            raise ValueError(f"{table}.csv lists players that base.csv doesn't: {len(unknown)}")
+        players = players.merge(extra, on="player_id", how="left", validate="one_to_one")
+
     players["season"] = SEASON
     players["fetched_on"] = snapshot.name
     players["source"] = SOURCE
