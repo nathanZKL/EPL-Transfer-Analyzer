@@ -28,7 +28,7 @@ The MVP is complete (steps 1–6 merged, PRs #1–#8). This branch, `salaries-ho
 
 ## Known issues
 
-- 33 salary rows stay unmatched: players NBA.com doesn't list because they played no 2025-26 games (e.g. Tyrese Haliburton, Kyrie Irving, Damian Lillard, Fred VanVleet), D22. They must not get overrides.
+- 31 salary rows stay unmatched: players NBA.com doesn't list because they played no 2025-26 games (e.g. Tyrese Haliburton, Kyrie Irving, Damian Lillard, Fred VanVleet), D22. They must not get overrides.
 - The built HoopsHype links are unchecked: HoopsHype answered automated requests with 402, so Claude stopped after three tries.
 - **No listed position** in real or mock data: NBA.com's league stats table doesn't return one.
 - The value chart's hover details need a mouse; the "Chart as a table" expander has the same numbers for keyboard and screen-reader use.
