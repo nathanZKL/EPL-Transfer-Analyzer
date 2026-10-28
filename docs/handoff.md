@@ -6,42 +6,43 @@ A current snapshot for picking up work. Overwrite it at meaningful stopping poin
 
 ## Current objective
 
-MVP **step 6: method page and README polish** ([mvp-plan.md](mvp-plan.md#build-steps)), branch `step-6-method-readme`. Built and tested; Nathan reviews, then the PR is opened. With it the MVP is complete.
+The MVP is complete (steps 1–6 merged, PRs #1–#8). This branch, `salaries-hoopshype-dataset`, only records how the real 2025-26 salaries were filled in (D36); the data itself stays on Nathan's machine.
 
 ## Done
 
-- Steps 1–5 merged (PRs #1–#7). Real data on Nathan's machine: 582 players (fetched 2026-10-26), 378 with 500+ minutes, 19 salaries imported (16 of them ranked).
-- Step 6 decision agreed 2026-10-27: D35 method page as Markdown (`docs/method.md`), three committed mock-data screenshots in `docs/images/`.
-- `docs/method.md`: data sources (the nine NBA.com tables), rates, the 500-minute cut, percentiles and the minimum-attempts table, role recipes with a worked example, the value score, limits, NBA.com attribution and terms.
-- `tests/test_method_doc.py` checks the page's role recipes, minutes cut, minimum attempts, play-type listing floor and the "fewer than 30 salaries" warning against the code; changing a weight in `config/roles.toml` without updating the page fails a test (checked).
-- README rewritten: the opening said "trade analyzer" (D1); it now states the role/value question, MVP status, the three screenshots, attribution and a link to the method page.
-- Screenshots taken at 1440×900 with the sidebar switch on mock data (checked: only `Mock` players, teams and salaries visible).
-- Fix found while taking them: the shortlist's Salary source column showed "Mock," with a trailing comma (mock salaries have no date). `board.salary_source` (was `_salary_source`) now leaves out blank parts and the shortlist uses it, so both screens word it the same.
+- Real data on Nathan's machine: 582 players (fetched 2026-10-26), 378 with 500+ minutes.
+- Salaries (D36, agreed 2026-10-27): `data/salaries/salaries_2025-26.csv` rebuilt from a third-party dataset of HoopsHype figures (`~/Downloads/player_salaries.csv`, stated as accessed 2026-07-07):
+  - 583 players; source `HoopsHype`, `retrieved_on` 2026-07-07, link `https://www.hoopshype.com/salaries/players/<name-slug>/<HoopsHype id>/`.
+  - 42 players with several 2025-26 rows (trades, waivers) got the sum; their team is the team of the bigger row (team only breaks ties between namesakes).
+  - 10 rows with no HoopsHype id were left out (no link possible): Max Shulga, Alex Antetokounmpo, Chris Manon, Malachi Smith, Tyler Burton, Lucas Williamson, David Muoka, Lawson Lovering, Kyle Mangas, Hayden Gray.
+  - The 20 earlier hand-entered rows are kept in `data/salaries/salaries_2025-26.backup.csv`.
+  - `data/salaries/overrides.csv`: 12 nickname/spelling fixes (Nic Claxton, Santi Aldama, Dennis Schröder, Herbert Jones, Ronald Holland II, Bub Carrington, Svi Mykhailiuk, Cam Whitmore, Yanic Konan Niederhäuser, David Jones Garcia, Trevon Scott, Nigel Hayes-Davis).
+  - Import result: 550 of 583 matched (12 by override); 362 of 378 ranked players have a salary.
+- The conversion was a one-off script in Claude's scratchpad, not added to the repo.
 
 ## Remaining
 
-- Nathan reviews `docs/method.md`, the README and the screenshots; then open the step 6 PR.
-- Not done, needs Nathan's OK: the GitHub repository description describes a different project ("evaluating Premier League transfer targets..."). It is changed on GitHub (`gh repo edit --description`), not in the code.
+- Nathan reviews and merges the D36 docs PR.
+- Optional: name who made the salary dataset in D36 if known.
 
 ## Known issues
 
-- Only 19 salaries, so value scores are rough; the value tab warns when fewer than 30 ranked players have one.
+- 33 salary rows stay unmatched: players NBA.com doesn't list because they played no 2025-26 games (e.g. Tyrese Haliburton, Kyrie Irving, Damian Lillard, Fred VanVleet), D22. They must not get overrides.
+- The built HoopsHype links are unchecked: HoopsHype answered automated requests with 402, so Claude stopped after three tries.
 - **No listed position** in real or mock data: NBA.com's league stats table doesn't return one.
-- Players with no 2025-26 games (e.g. Tyrese Haliburton) aren't in NBA.com's table, so their salaries stay unmatched (D22).
 - The value chart's hover details need a mouse; the "Chart as a table" expander has the same numbers for keyboard and screen-reader use.
 - Screenshots must be retaken by hand when the screens change.
 - Low-priority review notes (not fixed): duplicate override keys silently use the last one; `load_overrides` checks have no tests; duplicate salary rows that are both unmatched aren't flagged.
-- Still open: O1 (salary site to scrape, if any) and O3 (final role weights).
+- Still open: O1 (salary site to scrape, if any; not needed while D36 holds) and O3 (final role weights, now possible with near-full salaries).
 
-## Last verification (2026-10-27, macOS, Python 3.13 via uv, branch `step-6-method-readme`)
+## Last verification (2026-10-27, macOS, Python 3.13 via uv, branch `salaries-hoopshype-dataset`)
 
 | Check | Result |
 | --- | --- |
-| `pytest` | 157 passed |
-| `ruff check .` | All checks passed |
-| `ruff format --check .` | Clean |
-| App on mock data (`streamlit run app.py`, Claude in a headless browser) | Shortlist, value chart and comparison render; Salary source reads "Mock" |
+| `pytest` | 157 passed (no code changed) |
+| `ruff check .` / `ruff format --check .` | Clean |
+| `python -m nbavalue.import_salaries` | 550 of 583 matched, 12 by override, 33 unmatched |
 
 ## Next concrete task
 
-Nathan reviews step 6, then the PR is opened. After that the MVP is done; the next work would come from O3 (tuning role weights on real rankings) or the plan's "Ideas for later".
+O3: tune the role weights in `config/roles.toml` now that rankings and value scores rest on real data.
