@@ -71,8 +71,8 @@ Six small pull requests, each reviewable and testable on its own.
 4. **Analysis** – split in two PRs (D24), tested on mock data:
    - **4a** – hustle, rim-defence, pull-up and play-type tables (7 more NBA.com requests), per-100 stats and league percentiles for players with 500+ minutes (D25): `nbavalue/analysis.py`.
    - **4b** – `config/roles.toml` (D26), role fit scores and value score.
-5. **App** – shortlist, value chart and comparison screens on real data, with a switch to mock data (D32–D34): `nbavalue/board.py` and `app.py`. Built 2026-10-27; PR pending.
-6. **Method page and README polish** – method and limits, NBA.com attribution, mock-data screenshots.
+5. **App** – shortlist, value chart and comparison screens on real data, with a switch to mock data (D32–D34): `nbavalue/board.py` and `app.py`. ✅ done (PR #7, merged 2026-10-27)
+6. **Method page and README polish** – method and limits, NBA.com attribution, mock-data screenshots: `docs/method.md`, `docs/images/` (D35). Built 2026-10-27; PR pending.
 
 ## Open decisions
 
