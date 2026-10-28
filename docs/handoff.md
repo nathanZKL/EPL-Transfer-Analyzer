@@ -16,13 +16,14 @@ The MVP is complete (steps 1–6 merged, PRs #1–#8). This branch, `salaries-ho
   - 42 players with several 2025-26 rows (trades, waivers) got the sum; their team is the team of the bigger row (team only breaks ties between namesakes).
   - 10 rows with no HoopsHype id were left out (no link possible): Max Shulga, Alex Antetokounmpo, Chris Manon, Malachi Smith, Tyler Burton, Lucas Williamson, David Muoka, Lawson Lovering, Kyle Mangas, Hayden Gray.
   - The 20 earlier hand-entered rows are kept in `data/salaries/salaries_2025-26.backup.csv`.
-  - `data/salaries/overrides.csv`: 12 nickname/spelling fixes (Nic Claxton, Santi Aldama, Dennis Schröder, Herbert Jones, Ronald Holland II, Bub Carrington, Svi Mykhailiuk, Cam Whitmore, Yanic Konan Niederhäuser, David Jones Garcia, Trevon Scott, Nigel Hayes-Davis).
-  - Import result: 550 of 583 matched (12 by override); 362 of 378 ranked players have a salary.
+  - `data/salaries/overrides.csv`: 14 nickname/spelling fixes (Yang Hansen, Nate Williams, Nic Claxton, Santi Aldama, Dennis Schröder, Herbert Jones, Ronald Holland II, Bub Carrington, Svi Mykhailiuk, Cam Whitmore, Yanic Konan Niederhäuser, David Jones Garcia, Trevon Scott, Nigel Hayes-Davis).
+  - Import result: 552 of 583 matched (14 by override); 362 of 378 ranked players have a salary. 30 NBA.com players have none: 8 left out for no HoopsHype id, 22 missing from the dataset's 2025-26 rows (16 of them ranked: Neemias Queta, Moussa Diabaté, Pelle Larsson, Jordan Goodwin, Brandon Williams, Javonte Green, Adem Bona, Bones Hyland, Landry Shamet, Craig Porter Jr., Gary Payton II, Dru Smith, Rob Dillingham, Anthony Gill, Thomas Bryant, Mohamed Diawara).
 - The conversion was a one-off script in Claude's scratchpad, not added to the repo.
 
 ## Remaining
 
 - Nathan reviews and merges the D36 docs PR.
+- Nathan is looking up 2025-26 salaries for the 22 players missing from the dataset and adding them as rows with their own source, link and date.
 - Optional: name who made the salary dataset in D36 if known.
 
 ## Known issues
@@ -41,7 +42,7 @@ The MVP is complete (steps 1–6 merged, PRs #1–#8). This branch, `salaries-ho
 | --- | --- |
 | `pytest` | 157 passed (no code changed) |
 | `ruff check .` / `ruff format --check .` | Clean |
-| `python -m nbavalue.import_salaries` | 550 of 583 matched, 12 by override, 33 unmatched |
+| `python -m nbavalue.import_salaries` | 552 of 583 matched, 14 by override, 31 unmatched |
 
 ## Next concrete task
 
