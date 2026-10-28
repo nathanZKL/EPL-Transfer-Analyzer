@@ -17,7 +17,7 @@ The MVP is complete (steps 1–6 merged, PRs #1–#8). This branch, `salaries-ho
   - 10 rows with no HoopsHype id were left out (no link possible): Max Shulga, Alex Antetokounmpo, Chris Manon, Malachi Smith, Tyler Burton, Lucas Williamson, David Muoka, Lawson Lovering, Kyle Mangas, Hayden Gray.
   - The 20 earlier hand-entered rows are kept in `data/salaries/salaries_2025-26.backup.csv`.
   - `data/salaries/overrides.csv`: 14 nickname/spelling fixes (Yang Hansen, Nate Williams, Nic Claxton, Santi Aldama, Dennis Schröder, Herbert Jones, Ronald Holland II, Bub Carrington, Svi Mykhailiuk, Cam Whitmore, Yanic Konan Niederhäuser, David Jones Garcia, Trevon Scott, Nigel Hayes-Davis).
-  - Import result: 552 of 583 matched (14 by override); 362 of 378 ranked players have a salary. 30 NBA.com players have none: 8 left out for no HoopsHype id, 22 missing from the dataset's 2025-26 rows (16 of them ranked: Neemias Queta, Moussa Diabaté, Pelle Larsson, Jordan Goodwin, Brandon Williams, Javonte Green, Adem Bona, Bones Hyland, Landry Shamet, Craig Porter Jr., Gary Payton II, Dru Smith, Rob Dillingham, Anthony Gill, Thomas Bryant, Mohamed Diawara).
+  - Import result before the Spotrac additions: 552 of 583 matched (14 by override); 362 of 378 ranked players had a salary. 30 NBA.com players had none: 8 left out for no HoopsHype id, 22 missing from the dataset's 2025-26 rows (16 of them ranked: Neemias Queta, Moussa Diabaté, Pelle Larsson, Jordan Goodwin, Brandon Williams, Javonte Green, Adem Bona, Bones Hyland, Landry Shamet, Craig Porter Jr., Gary Payton II, Dru Smith, Rob Dillingham, Anthony Gill, Thomas Bryant, Mohamed Diawara).
 - The conversion was a one-off script in Claude's scratchpad, not added to the repo.
 
 ## Remaining
