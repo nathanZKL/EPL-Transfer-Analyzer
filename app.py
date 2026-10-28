@@ -17,7 +17,8 @@ FEW_SALARIES = 30  # below this many salaried players, warn that value scores ar
 st.set_page_config(page_title="NBA Player Value Analyzer", layout="wide")
 # Streamlit leaves a tall empty band above the page and the sidebar; trim both. Its toolbar
 # strip is made see-through so the title can sit under it (only the small menu button is
-# there, see .streamlit/config.toml); phones keep room for the sidebar's open button.
+# there, see .streamlit/config.toml); phones keep room for the sidebar's open button. The
+# data-testid names are Streamlit internals; tests/test_app.py fails if an upgrade drops one.
 st.markdown(
     """<style>
     [data-testid='stHeader'] {background: transparent;}

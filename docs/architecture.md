@@ -22,7 +22,7 @@ The app reads the real processed files when they exist (a sidebar switch shows t
 | What the app shows | `nbavalue/board.py` | ✅ Built (step 5): loads real files (normal blank handling, label checks, refuses salaries from a different run) or the mock set; joins stats, salaries and scores into one row per player with a `ranked` flag (500+ minutes); filters the shortlist without changing scores (D34); builds the comparison text. No Streamlit code |
 | Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
 | Streamlit app | `app.py`, `.streamlit/config.toml` | ✅ Built (step 5): sidebar (data switch D32, role, filters); tabs Shortlist, Value chart (Altair, D33) and Compare players; NBA.com credit or mock label on every tab; loading, empty, error and missing-data messages. Method page is step 6 |
-| Tests | `tests/` | ✅ 138 tests, including headless app runs on temporary files (never the real data folder); fetch tests use `tests/fake_nba.py`, never the network |
+| Tests | `tests/` | ✅ 141 tests, including headless app runs on temporary files (never the real data folder) and a check that the app's layout style still matches this Streamlit version; fetch tests use `tests/fake_nba.py`, never the network |
 | Everything else in the diagram | — | Planned |
 
 ## Technology stack

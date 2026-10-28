@@ -38,7 +38,8 @@ MVP **step 5: the app** ([mvp-plan.md](mvp-plan.md#build-steps)), branch `step-5
 
 | Check | Result |
 | --- | --- |
-| `pytest` | 138 passed (all app tests use temporary files, never `data/processed/`) |
+| `pytest` | 141 passed (all app tests use temporary files, never `data/processed/`) |
+| PR #7 review (local, `.claude/reviews/pr-7-review.md`) | Approve; 3 low findings, all fixed: empty player file now says so, test counts updated, layout-style guard test added |
 | `ruff check .` | All checks passed |
 | `ruff format --check .` | Clean |
 | App on real data (`streamlit run app.py`, Claude in a headless browser) | Shortlist, value chart, comparison render; mock switch works |

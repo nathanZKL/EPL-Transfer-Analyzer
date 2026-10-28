@@ -115,6 +115,13 @@ def test_missing_player_table_says_which_command_to_run(tmp_path):
         board.load_real(tmp_path / "players.csv", tmp_path / "salaries.csv")
 
 
+def test_empty_player_table_says_so_and_how_to_fix_it(real_files):
+    players_path, salaries_path = real_files
+    pd.read_csv(players_path).head(0).to_csv(players_path, index=False)
+    with pytest.raises(ValueError, match="has no players.*update_data --refresh"):
+        board.load_real(players_path, salaries_path)
+
+
 def test_salaries_from_a_different_run_are_refused(real_files):
     players_path, salaries_path = real_files
     pay = pd.read_csv(salaries_path)

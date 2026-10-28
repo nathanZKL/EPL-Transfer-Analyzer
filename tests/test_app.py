@@ -1,10 +1,12 @@
 """Headless runs of the app. Every test points the app at temporary files, so it never reads
 real data that may sit in data/processed/ on Nathan's machine."""
 
+import re
 from pathlib import Path
 
 import pandas as pd
 import pytest
+import streamlit
 from streamlit.testing.v1 import AppTest
 
 from nbavalue import board
@@ -75,6 +77,16 @@ def test_without_a_salary_file_the_value_chart_says_how_to_import(real_data):
     app = run_app()
     assert any("No salaries imported yet" in text for text in texts(app.tabs[1].warning))
     assert any("no salary filter" in text for text in texts(app.sidebar.caption))
+
+
+def test_layout_style_targets_elements_this_streamlit_version_has():
+    """app.py trims Streamlit's top whitespace through its internal `data-testid` names. If an
+    upgrade renames one, the style silently stops working; this test catches that instead."""
+    ids = set(re.findall(r"data-testid='(\w+)'", APP_PATH.read_text()))
+    bundle = Path(streamlit.__file__).parent / "static"
+    code = "".join(path.read_text(errors="ignore") for path in bundle.rglob("*.js"))
+    assert ids, "app.py no longer styles any Streamlit element; remove this test"
+    assert {name for name in ids if name not in code} == set()
 
 
 def test_a_broken_data_file_shows_an_error_instead_of_crashing(real_data):

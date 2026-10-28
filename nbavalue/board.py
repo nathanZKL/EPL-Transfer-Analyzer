@@ -90,6 +90,10 @@ def load_real(players_path: Path | None = None, salaries_path: Path | None = Non
     # Normal blank handling, so a blank stat is a missing number rather than text.
     players = pd.read_csv(players_path)
     require_columns(players, prepare.PLAYER_COLUMNS, players_path.name)
+    if players.empty:
+        raise ValueError(
+            f"{players_path.name} has no players. Run python -m nbavalue.update_data --refresh."
+        )
     _only_label(players, DataLabel.NBA_COM, players_path.name)
     fetched = players["fetched_on"].astype(str).unique()
     if len(fetched) != 1:
