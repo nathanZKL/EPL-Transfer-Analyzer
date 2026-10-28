@@ -2,7 +2,7 @@
 
 A current snapshot for picking up work. Overwrite it at meaningful stopping points; don't append a diary.
 
-**Last updated:** 2026-10-27
+**Last updated:** 2026-10-28
 
 ## Current objective
 
@@ -23,7 +23,8 @@ The MVP is complete (steps 1–6 merged, PRs #1–#8). This branch, `salaries-ho
 ## Remaining
 
 - Nathan reviews and merges the D36 docs PR.
-- Nathan is looking up 2025-26 salaries for the 22 players missing from the dataset and adding them as rows with their own source, link and date.
+- Done 2026-10-28: Nathan added the 22 missing players by hand from Spotrac (lines 585–606 of the salary file, `retrieved_on` 2026-10-28); all 22 matched by name. Import now: 574 of 605 matched (14 by override), 31 unmatched (no 2025-26 games), and all 378 ranked players have a salary. Only the 8 left-out small contracts (none ranked) have no salary.
+- Optional: replace the Spotrac team/league page links with player pages (Gary Payton II, Rob Dillingham, Andre Jackson Jr. point to the league rankings page); Craig Porter Jr.'s link ends in `cap_total2`, possibly a typo.
 - Optional: name who made the salary dataset in D36 if known.
 
 ## Known issues
@@ -42,7 +43,7 @@ The MVP is complete (steps 1–6 merged, PRs #1–#8). This branch, `salaries-ho
 | --- | --- |
 | `pytest` | 157 passed (no code changed) |
 | `ruff check .` / `ruff format --check .` | Clean |
-| `python -m nbavalue.import_salaries` | 552 of 583 matched, 14 by override, 31 unmatched |
+| `python -m nbavalue.import_salaries` | 574 of 605 matched, 14 by override, 31 unmatched (2026-10-28) |
 
 ## Next concrete task
 
