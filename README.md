@@ -1,7 +1,7 @@
 # NBA-Player-Value-Analyzer
 An NBA trade analyzer that evaluates potential trades and player acquisitions using player performance, team needs, roster fit, and contract value to help identify moves that make sense for each team.
 
-> **Status: step 4 of 6 (analysis) in progress.** The app still shows **mock data only**: fictional players, teams and salaries. Commands to fetch real NBA.com stats and import salaries exist, but the app doesn't read their output yet.
+> **Status: step 5 of 6 (the app).** The app shows a role shortlist, a fit-vs-salary chart and a player comparison. It uses real NBA.com stats once you've fetched them on your own machine, and fictional **mock data** otherwise. The method page comes in step 6.
 
 ## What the first version (MVP) will do
 
@@ -52,7 +52,14 @@ uv pip install -r requirements-dev.txt
 streamlit run app.py
 ```
 
-Your browser opens at http://localhost:8501. You should see a yellow **MOCK DATA** warning above two tables of fictional players and salaries. Press `Ctrl+C` in the terminal to stop it.
+Your browser opens at http://localhost:8501. Press `Ctrl+C` in the terminal to stop it.
+
+- **Sidebar:** choose real or mock data, the role you're looking for, and filters (teams to leave out, max salary, max age, min minutes).
+- **Shortlist:** players ranked by fit for that role, with value score, salary and where the salary came from. A dash means missing, never guessed.
+- **Value chart:** fit against salary. Blue dots give more of the role than their salary suggests, orange dots less. Hover a dot for details.
+- **Compare players:** two or three players side by side: role scores and the stats behind them.
+
+Before you fetch real data (next section) the app shows fictional players with a yellow **MOCK DATA** warning. Fit and value scores are our own estimates, not facts. Only players with 500+ minutes are ranked.
 
 ## Fetch real NBA.com stats (optional, your own machine only)
 
@@ -60,7 +67,7 @@ Your browser opens at http://localhost:8501. You should see a yellow **MOCK DATA
 python -m nbavalue.update_data
 ```
 
-This downloads 2025-26 player stats from NBA.com into `data/raw/2025-26/<date>/` (nine requests, a few seconds apart: box score, advanced, hustle, rim defence, pull-ups and four play types) and builds `data/processed/players.csv`. Running it again reuses the saved files; add `--refresh` to download again. Both folders are git-ignored: NBA.com's terms allow personal use but not republishing. The app doesn't read this file yet.
+This downloads 2025-26 player stats from NBA.com into `data/raw/2025-26/<date>/` (nine requests, a few seconds apart: box score, advanced, hustle, rim defence, pull-ups and four play types) and builds `data/processed/players.csv`. Running it again reuses the saved files; add `--refresh` to download again. Both folders are git-ignored: NBA.com's terms allow personal use but not republishing. Restart the app afterwards (or reload the page) and it uses this file.
 
 ## Import salaries (optional, your own machine only)
 
@@ -116,6 +123,7 @@ nbavalue/            Python code the app uses
   import_salaries.py The command that imports salaries
   analysis.py        Per-100 stats and league percentiles
   roles.py           Role fit scores and value scores (our estimates)
+  board.py           Joins everything into the tables the app shows
 config/roles.toml    The six roles: which stats count, and how much
 data/mock/           Fictional data, committed to the repo
 tests/               Automated checks

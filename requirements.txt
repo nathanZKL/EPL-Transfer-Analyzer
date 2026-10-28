@@ -1,4 +1,5 @@
 # Packages the app needs to run.
 pandas>=2.2,<3
-streamlit>=1.40,<2
+streamlit>=1.66,<2  # app.py uses table features (placeholder, pinned columns) tested on 1.66
+altair>=5,<7  # value chart; comes with Streamlit, listed because app.py uses it directly
 nba_api>=1.12,<2

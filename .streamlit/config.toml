@@ -1,0 +1,9 @@
+# App look. A muted blue accent instead of Streamlit's default red, which reads as "bad"
+# next to fit scores; it matches the blue ("good value") end of the value chart.
+[theme]
+primaryColor = "#2f6690"
+
+# Hide the "Deploy" button: this app is local only (NBA.com's terms bar hosting it publicly).
+# The menu button stays.
+[client]
+toolbarMode = "minimal"
