@@ -193,6 +193,16 @@ def test_team_codes_get_full_names_and_unknown_codes_stay_as_codes():
     assert board.team_names(["BOS", "MVM"]) == {"BOS": "Boston Celtics", "MVM": "MVM"}
 
 
+def test_salary_source_leaves_out_blank_parts():
+    row = {"salary_usd": 1_000_000, "source": "Site", "retrieved_on": "2026-10-24"}
+    assert board.salary_source(pd.Series(row)) == "Site, 2026-10-24"
+    assert board.salary_source(pd.Series({**row, "source": "Mock", "retrieved_on": ""})) == "Mock"
+    assert board.salary_source(pd.Series({**row, "retrieved_on": float("nan")})) == "Site"
+    assert board.salary_source(pd.Series({**row, "salary_usd": float("nan")})) == (
+        "not in the salary file"
+    )
+
+
 def test_missing_salary_is_written_as_missing():
     assert board.format_salary(float("nan")) == "missing"
     assert board.format_salary(55_224_526) == "$55,224,526"

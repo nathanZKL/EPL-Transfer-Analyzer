@@ -219,10 +219,12 @@ def player_label(row: pd.Series) -> str:
     return f"{row['player_name']} ({row['team']})"
 
 
-def _salary_source(row: pd.Series) -> str:
+def salary_source(row: pd.Series) -> str:
+    """'Site, date' for a salary; blank parts (mock salaries have no date) are left out."""
     if pd.isna(row["salary_usd"]):
         return "not in the salary file"
-    return f"{row['source']}, {row['retrieved_on']}".strip(", ")
+    parts = [row["source"], row["retrieved_on"]]
+    return ", ".join(str(part) for part in parts if pd.notna(part) and str(part).strip())
 
 
 def compare(
@@ -249,7 +251,7 @@ def compare(
         "Age": [f"{age:.0f}" for age in rows["age"]],
         "Minutes": [f"{minutes:,.0f}" for minutes in rows["minutes"]],
         "Salary": [format_salary(amount) for amount in rows["salary_usd"]],
-        "Salary source": [_salary_source(row) for _, row in rows.iterrows()],
+        "Salary source": [salary_source(row) for _, row in rows.iterrows()],
     }
     fits = {
         role.label: ["missing" if pd.isna(v) else f"{v:.0f}" for v in rows[fit_column(key)]]

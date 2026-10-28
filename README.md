@@ -1,17 +1,27 @@
-# NBA-Player-Value-Analyzer
-An NBA trade analyzer that evaluates potential trades and player acquisitions using player performance, team needs, roster fit, and contract value to help identify moves that make sense for each team.
+# NBA Player Value Analyzer
 
-> **Status: step 5 of 6 (the app).** The app shows a role shortlist, a fit-vs-salary chart and a player comparison. It uses real NBA.com stats once you've fetched them on your own machine, and fictional **mock data** otherwise. The method page comes in step 6.
+A local app that answers one question: *which NBA players best fit the role I'm looking for, and who gives the most of that role per dollar of salary?*
 
-## What the first version (MVP) will do
+Pick a role such as rim protector or 3-and-D wing. The app ranks every player with 500+ minutes by how well their 2025-26 NBA.com stats fit that role, plots fit against salary to show who is cheap or expensive for what they do, and puts two or three players side by side.
 
-Answer one question: *which NBA players best fit the role I'm looking for, and who gives the most of that role per dollar of salary?*
+> **Status: MVP complete (6 of 6 steps).** A personal, non-commercial fan and learning project. Fit and value scores are our own estimates, not facts. Ideas for after the MVP (team needs, trades, contract length) are listed in [docs/mvp-plan.md](docs/mvp-plan.md#ideas-for-later).
 
-- Role fit scores (0–100) for six roles, such as rim protector and 3-and-D wing
-- A value view: role fit against reported salary
-- A shortlist with filters, and side-by-side player comparison
+![Shortlist of the best rim protectors, using fictional mock players](docs/images/shortlist.png)
 
-Trades, salary-cap rules and team-needs analysis are planned for after the MVP. The full plan, including what the data can and can't support, is in [docs/mvp-plan.md](docs/mvp-plan.md), and the data flow is in [docs/architecture.md](docs/architecture.md).
+*All screenshots use the fictional mock dataset: real NBA.com data may not be republished.*
+
+## What it does
+
+- **Six role fit scores (0–100):** rim protector, 3-and-D wing, primary creator, shot creator, interior big and connector. Each is a weighted mix of stat percentiles, set in [`config/roles.toml`](config/roles.toml).
+- **Shortlist:** players ranked by fit, filtered by team, salary, age and minutes.
+- **Value chart:** fit against reported salary. Value = fit percentile minus salary percentile, so a high-fit, low-salary player scores high.
+- **Comparison:** two or three players side by side, with the stats behind each score.
+
+| Value chart | Compare players |
+| --- | --- |
+| ![Fit against salary, coloured by value](docs/images/value-chart.png) | ![Two mock players side by side](docs/images/compare.png) |
+
+**How the numbers are made, and their limits:** [docs/method.md](docs/method.md). The plan is in [docs/mvp-plan.md](docs/mvp-plan.md) and the data flow in [docs/architecture.md](docs/architecture.md).
 
 ## Data and labels
 
@@ -19,12 +29,12 @@ Every value the app shows carries a label:
 
 | Label | Meaning |
 | --- | --- |
-| `NBA.com` | Official stats from NBA.com, with the date fetched (coming in step 2) |
-| `Reported salary` | A salary from a named public source, with its link and date (step 3) |
-| `Estimate` | Something this app calculates, such as the value score (step 4) |
+| `NBA.com` | Official 2025-26 stats from NBA.com, with the date fetched |
+| `Reported salary` | A salary from a named public source, with its link and date |
+| `Estimate` | Something this app calculates: fit and value scores |
 | `Mock` | Fictional data for testing and demos. See [data/mock/README.md](data/mock/README.md) |
 
-Real data is downloaded to your own machine and is **never committed** to this repo (`data/raw/` and `data/processed/` are git-ignored). NBA.com's [terms](https://www.nba.com/terms) allow personal, non-commercial use with attribution, but not public republishing. (`data/salaries/` is git-ignored too.)
+Stats are from **[NBA.com](https://www.nba.com/stats)**, fetched with the unofficial [`nba_api`](https://github.com/swar/nba_api) package. This project isn't affiliated with or endorsed by the NBA. NBA.com's [terms](https://www.nba.com/terms) allow personal, non-commercial use with attribution, but not republishing, so real data is downloaded to your own machine and **never committed** (`data/raw/`, `data/processed/` and `data/salaries/` are git-ignored). The app credits NBA.com on every screen with real stats. Missing values are shown as missing, never guessed.
 
 ## Setup
 
@@ -127,7 +137,8 @@ nbavalue/            Python code the app uses
 config/roles.toml    The six roles: which stats count, and how much
 data/mock/           Fictional data, committed to the repo
 tests/               Automated checks
-docs/                Plan, architecture, decisions, handoff
+docs/                Method, plan, architecture, decisions, handoff
+docs/images/         README screenshots (mock data only)
 CLAUDE.md            Instructions for Claude when working on this repo
 ```
 

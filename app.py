@@ -157,12 +157,7 @@ def shortlist_tab(data, players, listed, role_label) -> None:
     else:
         table = in_millions(listed).assign(
             rank=range(1, len(listed) + 1),
-            salary_source=[
-                f"{row.source}, {row.retrieved_on}"
-                if pd.notna(row.salary_usd)
-                else "not in salary file"
-                for row in listed.itertuples()
-            ],
+            salary_source=[board.salary_source(row) for _, row in listed.iterrows()],
             source_url=listed["source_url"].replace("", None),
         )
         st.caption("A dash means the value is missing, never guessed.")

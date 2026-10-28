@@ -2,7 +2,7 @@
 
 How data moves through the MVP. Data flows one way, from the sources down to the app, and each step hands the next a plain CSV file. Decisions referenced as D# / O# are in [decisions.md](decisions.md).
 
-## What exists today (step 5 built)
+## What exists today (MVP built: steps 1–6)
 
 The app reads the real processed files when they exist (a sidebar switch shows the mock data instead, D32) and runs the whole analysis on them: percentiles, role fit scores and value scores. Nathan's real fetch (2026-10-26) has 582 players; 19 salaries are imported. Mock players use the same columns as the real table (D17), so every function takes either.
 
@@ -21,8 +21,9 @@ The app reads the real processed files when they exist (a sidebar switch shows t
 | Fit and value scores | `nbavalue/roles.py` | ✅ Built (step 4b): `load_roles` checks the config loudly; `fit_scores` = weighted average of a player's stat percentiles per role (a stat with no percentile is left out and the other weights count for more, D29); `value_scores` = fit percentile minus salary percentile among players with both (D10). Both labelled `Estimate` |
 | What the app shows | `nbavalue/board.py` | ✅ Built (step 5): loads real files (normal blank handling, label checks, refuses salaries from a different run) or the mock set; joins stats, salaries and scores into one row per player with a `ranked` flag (500+ minutes); filters the shortlist without changing scores (D34); builds the comparison text. No Streamlit code |
 | Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
-| Streamlit app | `app.py`, `.streamlit/config.toml` | ✅ Built (step 5): sidebar (data switch D32, role, filters); tabs Shortlist, Value chart (Altair, D33) and Compare players; NBA.com credit or mock label on every tab; loading, empty, error and missing-data messages. Method page is step 6 |
-| Tests | `tests/` | ✅ 141 tests, including headless app runs on temporary files (never the real data folder) and a check that the app's layout style still matches this Streamlit version; fetch tests use `tests/fake_nba.py`, never the network |
+| Streamlit app | `app.py`, `.streamlit/config.toml` | ✅ Built (step 5): sidebar (data switch D32, role, filters); tabs Shortlist, Value chart (Altair, D33) and Compare players; NBA.com credit or mock label on every tab; loading, empty, error and missing-data messages |
+| Method page | `docs/method.md` | ✅ Built (step 6, D35): how every number is made, its limits, NBA.com attribution. Its recipes and cut-offs are checked against the code by `tests/test_method_doc.py` |
+| Tests | `tests/` | ✅ 157 tests, including headless app runs on temporary files (never the real data folder) and a check that the app's layout style still matches this Streamlit version; fetch tests use `tests/fake_nba.py`, never the network |
 | Everything else in the diagram | — | Planned |
 
 ## Technology stack
@@ -89,7 +90,6 @@ The app asks `board.py` for either the real files or the mock set (sidebar switc
 | Component | What it does | Step |
 | --- | --- | --- |
 | `scrape_salaries` | Optional. Writes the same CSV format, only after the site's terms and robots.txt are checked (O1). | Later |
-| Method page | How the numbers are made and their limits; NBA.com attribution. | 6 |
 
 ## Deliberately left out
 
