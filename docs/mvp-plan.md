@@ -71,7 +71,7 @@ Six small pull requests, each reviewable and testable on its own.
 4. **Analysis** – split in two PRs (D24), tested on mock data:
    - **4a** – hustle, rim-defence, pull-up and play-type tables (7 more NBA.com requests), per-100 stats and league percentiles for players with 500+ minutes (D25): `nbavalue/analysis.py`.
    - **4b** – `config/roles.toml` (D26), role fit scores and value score.
-5. **App** – shortlist, value chart and comparison screens.
+5. **App** – shortlist, value chart and comparison screens on real data, with a switch to mock data (D32–D34): `nbavalue/board.py` and `app.py`. Built 2026-10-27; PR pending.
 6. **Method page and README polish** – method and limits, NBA.com attribution, mock-data screenshots.
 
 ## Open decisions
@@ -94,4 +94,5 @@ Not in the MVP. New ideas go here, not into the build steps, unless Nathan agree
 | Adjustable ranking filters: let the user change the 500-minute cut (D25) and the attempt minimums (D30) in the app, with the defaults shown | Nothing new: same data, recalculated | Ready; the thresholds are already single settings in `nbavalue/analysis.py` |
 | Injury-prone flag: mark players who missed many games over recent seasons, labelled `Estimate` | Games played per season from NBA.com (several seasons); reasons for absences from injury reports | Games played: available, mind the rate limits. Reasons: not clean data, so a flag can't tell injury from rest, suspension or coach's decision |
 | Salaried players with no 2025-26 games (D22): give them an ID and a "no stats" label | NBA.com's full player list (one extra request) | Not fetched yet |
+| Salaries via a Google search API instead of a scraper (Nathan noticed Google search shows Spotrac's salary details) | A search API key; results that state the salary and the page it came from | Not checked. The numbers would still be Spotrac's, so Spotrac's terms (O1) still apply, plus the search API's own terms. Google's Custom Search API may no longer accept new users (unverified) |
 | Hosted public website | Written permission from the NBA | Barred by NBA.com terms without consent |

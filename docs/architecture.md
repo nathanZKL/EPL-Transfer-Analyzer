@@ -2,9 +2,9 @@
 
 How data moves through the MVP. Data flows one way, from the sources down to the app, and each step hands the next a plain CSV file. Decisions referenced as D# / O# are in [decisions.md](decisions.md).
 
-## What exists today (step 3 merged)
+## What exists today (step 5 built)
 
-The app still reads only the committed mock CSVs. The NBA.com fetch and prepare code works: Nathan's first real fetch (2026-10-24) produced 582 players. The salary import checks a hand-made salary CSV and matches it to those players. The app doesn't read either output yet. Mock players already use the same columns as the real table (D17).
+The app reads the real processed files when they exist (a sidebar switch shows the mock data instead, D32) and runs the whole analysis on them: percentiles, role fit scores and value scores. Nathan's real fetch (2026-10-26) has 582 players; 19 salaries are imported. Mock players use the same columns as the real table (D17), so every function takes either.
 
 | Piece | File | Status |
 | --- | --- | --- |
@@ -18,10 +18,11 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | Salary check and match | `nbavalue/salaries.py` | ✅ Built: validates the salary CSV, matches by normalised name with team as tie-break and an override file (D18–D21); digits-only salaries and no unused overrides (D23); players with no 2025-26 games stay unmatched (D22) |
 | Salary command | `nbavalue/import_salaries.py` | ✅ Built: `python -m nbavalue.import_salaries` writes `data/processed/salaries.csv` and `salary_unmatched.csv`. Not yet run on real salaries |
 | Role recipes | `config/roles.toml` | ✅ Built (step 4b): six starter roles, each a list of stats with weights; Claude's starting guesses (D27), read with Python's built-in `tomllib` (no new dependency) |
-| Fit and value scores | `nbavalue/roles.py` | ✅ Built (step 4b): `load_roles` checks the config loudly; `fit_scores` = weighted average of a player's stat percentiles per role (a stat with no percentile is left out and the other weights count for more, D29); `value_scores` = fit percentile minus salary percentile among players with both (D10). Both labelled `Estimate`. Takes the percentile table from step 4a; not yet wired into the app |
+| Fit and value scores | `nbavalue/roles.py` | ✅ Built (step 4b): `load_roles` checks the config loudly; `fit_scores` = weighted average of a player's stat percentiles per role (a stat with no percentile is left out and the other weights count for more, D29); `value_scores` = fit percentile minus salary percentile among players with both (D10). Both labelled `Estimate` |
+| What the app shows | `nbavalue/board.py` | ✅ Built (step 5): loads real files (normal blank handling, label checks, refuses salaries from a different run) or the mock set; joins stats, salaries and scores into one row per player with a `ranked` flag (500+ minutes); filters the shortlist without changing scores (D34); builds the comparison text. No Streamlit code |
 | Mock dataset | `data/mock/players.csv`, `data/mock/salaries.csv` | ✅ Built; players use the real table's columns (D17) |
-| Streamlit app | `app.py` | ✅ Skeleton only: mock warning and two tables |
-| Tests | `tests/` | ✅ 107 tests, including a headless app smoke test; fetch tests use `tests/fake_nba.py`, never the network |
+| Streamlit app | `app.py`, `.streamlit/config.toml` | ✅ Built (step 5): sidebar (data switch D32, role, filters); tabs Shortlist, Value chart (Altair, D33) and Compare players; NBA.com credit or mock label on every tab; loading, empty, error and missing-data messages. Method page is step 6 |
+| Tests | `tests/` | ✅ 138 tests, including headless app runs on temporary files (never the real data folder); fetch tests use `tests/fake_nba.py`, never the network |
 | Everything else in the diagram | — | Planned |
 
 ## Technology stack
@@ -30,7 +31,8 @@ The app still reads only the committed mock CSVs. The NBA.com fetch and prepare 
 | --- | --- | --- |
 | Python | 3.11+ required, verified on 3.13 | Language |
 | pandas | `>=2.2,<3` (verified 2.3.3) | Tables |
-| Streamlit | `>=1.40,<2` (verified 1.66.1) | Local web UI |
+| Streamlit | `>=1.66,<2` (verified 1.66.1) | Local web UI |
+| Altair | `>=5,<7` (verified 6.3.0; comes with Streamlit) | Value chart (D33) |
 | pytest, ruff | `pytest>=8,<9`, `ruff>=0.6` | Tests, lint and formatting (dev only) |
 | `nba_api` | `>=1.12,<2` (verified 1.12.0) | NBA.com fetch |
 
@@ -60,35 +62,34 @@ flowchart TD
   PREP["nbavalue/prepare.py<br/>field checks, labels"]
   TABLE[("data/processed/players.csv<br/>git-ignored")]
   ROLES["config/roles.toml<br/>role recipes (O3)"]
-  ANA["nbavalue analysis<br/>per-100, percentiles, fit, value"]
+  ANA["nbavalue analysis + roles<br/>per-100, percentiles, fit, value"]
+  BOARD["nbavalue/board.py<br/>load, join, filter, compare"]
   APP["app.py (Streamlit, local)"]
 
   NBA --> FS --> RAW --> PREP
-  PREP --> TABLE --> ANA --> APP
-  SAL --> SALM --> STAB --> ANA
+  PREP --> TABLE --> BOARD
+  SAL --> SALM --> STAB --> BOARD
   TABLE --> SALM
   ROLES --> ANA
-  MOCK --> LOAD --> APP
+  MOCK --> LOAD --> BOARD
+  BOARD <--> ANA
+  BOARD --> APP
   MOCK -.-> PREP
 
   classDef built fill:#d4edda,stroke:#2e7d32,color:#000
-  classDef planned fill:#fff,stroke:#888,stroke-dasharray:5 5,color:#000
   class MOCK,LOAD,APP,FS,PREP,SALM built
   class NBA,RAW,TABLE,SAL,STAB built
-  class ROLES built
-  class ANA planned
+  class ROLES,ANA,BOARD built
 ```
 
-Today the app reads mock data directly through `mock_data.py`. Because mock players share the real table's columns (D17), the step 4 analysis functions take either table unchanged.
+The app asks `board.py` for either the real files or the mock set (sidebar switch, D32). Because mock players share the real table's columns (D17), the same analysis runs on both.
 
 ## Planned components
 
 | Component | What it does | Step |
 | --- | --- | --- |
 | `scrape_salaries` | Optional. Writes the same CSV format, only after the site's terms and robots.txt are checked (O1). | Later |
-| `data/processed/players.csv` | One row per player, rebuilt from raw files. Git-ignored. | 2–3 |
-| Analysis library | Pure functions: per-100 stats, league percentiles with a minimum-minutes cut (step 4a). Role fit and value score are built in `nbavalue/roles.py` (step 4b). Most heavily tested part. | 4 |
-| App screens | Shortlist, value chart, comparison, method page. Credits NBA.com on every screen with real stats. | 5–6 |
+| Method page | How the numbers are made and their limits; NBA.com attribution. | 6 |
 
 ## Deliberately left out
 

@@ -8,7 +8,7 @@ NBA Player Value Analyzer: a local Streamlit app that answers *"Which NBA player
 
 **MVP boundaries:** 2025-26 NBA.com stats plus a sourced salary CSV; six role fit scores; a fit-vs-salary value view; a shortlist, comparison and method page. **Out:** trades, salary-cap rules, team needs, hosting, databases. Ideas go in the plan's "Ideas for later" table.
 
-Current status: steps 1 (skeleton) and 2 (NBA.com fetch) are merged; step 3 (salary import) is merged; step 4 is split into 4a (stats and percentiles) and 4b (roles and scores). The app still shows mock data only. See the handoff for what's next.
+Current status: steps 1–4 are merged (step 4 as 4a stats and 4b roles). Step 5 (the app: shortlist, value chart, comparison on real or mock data) is built and awaiting its PR. Step 6 (method page, README polish) is next. See the handoff.
 
 ## Project docs: read before working
 

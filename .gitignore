@@ -16,9 +16,11 @@ data/salaries/
 .env
 .streamlit/secrets.toml
 
-# Local Claude Code files: review reports and agent worktrees
+# Local Claude Code files: review reports, agent worktrees, browser screenshots (can show
+# real data, so never committed)
 .claude/reviews/
 .claude/worktrees/
+.playwright-mcp/
 
 # OS / editor
 .DS_Store
